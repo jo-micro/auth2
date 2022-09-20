@@ -1,0 +1,98 @@
+version: '3'
+
+vars:
+  GIT_TAG: 
+    sh: git tag --points-at HEAD
+  GIT_COMMIT:
+    sh: git rev-parse --short HEAD
+  GIT_DIRTY:
+    sh: git status -s
+  VERSION:
+    sh: if test "{{.GIT_DIRTY}}" != ""; then echo "{{.GIT_COMMIT}}-dirty"; elif test "{{.GIT_TAG}}" != ""; then echo "{{.GIT_TAG}}"; else echo "{{.GIT_COMMIT}}"; fi
+
+tasks:
+  default:
+    cmds: 
+      - task: version
+      - task: volume
+      - task: podman
+
+  version:
+    desc: Print the version optained from git
+    cmds:
+      - echo "{{.VERSION}}"
+
+  volume:
+    run: "once"
+    cmds:
+      - podman volume inspect jo-micro_auth_go 1>/dev/null 2>&1 || podman volume create jo-micro_auth_go
+
+  builder:
+    desc: Run something in the builder container for example "task builder -- go get -u ./..."
+    cmds:
+      - podman run --rm -v "{{.VOLUME_PATH}}:/go:rw" -v "$PWD:/code" registry.fk.jochum.dev/jo-micro/builder:latest {{.CLI_ARGS}}
+    vars:
+      VOLUME_PATH:
+        sh: podman volume inspect jo-micro_auth_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+
+  protoc:
+    run: "once"
+    desc: Generate protobruf go files
+    sources:
+      - ./proto/**/*.proto
+    cmds:
+      - task: builder
+        vars:
+          CLI_ARGS: /scripts/protoc_gen.sh
+
+  build:authsql:
+    deps:
+      - protoc
+    sources:
+      - ./go.sum
+      - ./*.go
+      - ./service/microauthsqld/**/*.go
+      - ./internal/**/*.go
+    cmds:
+      - podman build  -v "{{.VOLUME_PATH}}:/go:rw" --build-arg VERSION={{.VERSION}} -t registry.fk.jochum.dev/jo-micro/auth2-sql:latest -f ./docker/microauthsqld/Dockerfile .
+    vars:
+      VOLUME_PATH:
+        sh: podman volume inspect jo-micro_auth_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+
+  podman:
+    desc: Generate docker container for jo-micro/auth-sql tagged as registry.fk.jochum.dev/jo-micro/auth2-sql:latest
+    cmds:
+      - task: build:authsql
+
+  tidy:
+    desc: Run "go mod tidy" in a container
+    cmds:
+      - task: builder
+        vars:
+          CLI_ARGS: go mod tidy
+
+  update:
+    desc: Run "go get -u ./..." in a container
+    cmds:
+      - task: builder
+        vars:
+          CLI_ARGS: /scripts/upgrade_deps.sh
+
+  fmt:
+    desc: Run "go fmt ./..." in a container
+    cmds:
+      - task: builder
+        vars:
+          CLI_ARGS: go fmt ./...
+
+  keys:
+    desc: Generate keys
+    cmds:
+      - podman run registry.fk.jochum.dev/jo-micro/auth2-sql:latest microauthsqld --generate-keys
+
+  rm:
+    desc: Remove all persistent data
+    cmds:
+      - podman volume rm jo-micro_auth_go || exit 0
+      - podman image rm registry.fk.jochum.dev/jo-micro/auth2-sql:latest || exit 0
+      - rm -rf $PWD/.task

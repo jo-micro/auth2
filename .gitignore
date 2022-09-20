@@ -1,0 +1,8 @@
+.DS_STORE
+
+.task/
+
+!.gitkeep
+
+go.work
+go.work.sum

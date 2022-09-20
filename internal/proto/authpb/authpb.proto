@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package authpb;
+
+option go_package = "jochum.dev/jo-micro/auth2/internal/proto/authpb;authpb";
+
+import "google/protobuf/empty.proto";
+
+service AuthService {
+    /**
+     * @auth AdminAndService
+     */
+    rpc List(ListRequest) returns (UserListReply) {}
+
+    /**
+     * @auth AuthenticatedUsers
+     */
+    rpc Detail(UserIDRequest) returns (User) {}
+    rpc Delete(UserIDRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateRoles(UpdateRolesRequest) returns (User) {}
+
+    rpc Register(RegisterRequest) returns (User) {}
+    rpc Login(LoginRequest) returns (TokenReply) {}
+    rpc Refresh(RefreshTokenRequest) returns (TokenReply) {}
+
+    rpc Inspect (TokenRequest) returns (User) {}
+}
+
+message KeysReply {
+    string alg = 1;
+    bytes accessPubKey = 2;
+    bytes refreshPubKey = 3;
+}
+
+message TokenRequest {
+    string accessToken = 1;
+}
+
+message ListRequest {
+    uint64 limit = 1;
+    uint64 offset = 2;
+}
+
+message User {
+    string id = 1;
+    string type = 2;
+    string issuer = 3;
+    map<string, string> metadata = 4;
+    repeated string scopes = 5;
+}
+
+message UserListReply {
+    repeated User data = 1;
+    uint64 count = 2;
+    uint64 limit = 3;
+    uint64 offset = 4;
+}
+
+message UserIDRequest {
+    string userId = 1;
+}
+
+message UpdateRolesRequest {
+    string userId = 1;
+    repeated string roles = 2;
+}
+
+message TokenReply {
+    string accessToken = 1;
+    int64 accessTokenExpiresAt = 2;
+    string refreshToken = 3;
+    int64 refreshTokenExpiresAt = 4;
+}
+
+message RegisterRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message RefreshTokenRequest {
+    string refreshToken = 1;
+}
