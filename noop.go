@@ -1,4 +1,4 @@
-package auth
+package auth2
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 func init() {
 	ClientAuthRegistry().Register(newNoopClientPlugin())
-	ServiceAuthRegistry().Register(newNoopServicePlugin())
 	RouterAuthRegistry().Register(newNoopRouterPlugin())
 }
 
@@ -26,7 +25,7 @@ func (p *noopClientPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopClientPlugin) Flags() []cli.Flag {
+func (p *noopClientPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
 	return []cli.Flag{}
 }
 
@@ -42,6 +41,13 @@ func (p *noopClientPlugin) Health(ctx context.Context) (string, error) {
 	return "All fine", nil
 }
 
+func (p *noopClientPlugin) SetVerifier(v VerifierPlugin) {
+}
+
+func (p *noopClientPlugin) ServiceContext(ctx context.Context) (context.Context, error) {
+	return ctx, nil
+}
+
 func (p *noopClientPlugin) Inspect(ctx context.Context) (*User, error) {
 	return &User{Id: uuid.New().String(), Issuer: p.String()}, nil
 }
@@ -54,32 +60,6 @@ func (p *noopClientPlugin) Wrapper() server.HandlerWrapper {
 	}
 }
 
-func newNoopServicePlugin() ServerPlugin {
-	return new(noopServicePlugin)
-}
-
-type noopServicePlugin struct{}
-
-func (p *noopServicePlugin) String() string {
-	return "noop"
-}
-
-func (p *noopServicePlugin) Flags() []cli.Flag {
-	return []cli.Flag{}
-}
-
-func (p *noopServicePlugin) Init(cli *cli.Context, service micro.Service) error {
-	return nil
-}
-
-func (p *noopServicePlugin) Stop() error {
-	return nil
-}
-
-func (p *noopServicePlugin) Health(ctx context.Context) (string, error) {
-	return "All fine", nil
-}
-
 func newNoopRouterPlugin() RouterPlugin {
 	return new(noopRouterPlugin)
 }
@@ -90,7 +70,7 @@ func (p *noopRouterPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopRouterPlugin) Flags() []cli.Flag {
+func (p *noopRouterPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
 	return []cli.Flag{}
 }
 

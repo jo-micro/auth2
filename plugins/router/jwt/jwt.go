@@ -8,21 +8,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/metadata"
-	"jochum.dev/jo-micro/auth2"
-	"jochum.dev/jo-micro/auth2/internal/util"
+	auth "jochum.dev/jo-micro/auth2"
+	"jochum.dev/jo-micro/auth2/shared/sjwt"
+	"jochum.dev/jo-micro/auth2/shared/sutil"
 )
-
-type jWTClaims struct {
-	*jwt.StandardClaims
-	Type   string   `json:"type,omitempty"`
-	Roles  []string `json:"roles,omitempty"`
-	Scopes []string `json:"scopes,omitempty"`
-}
 
 func init() {
 	auth.RouterAuthRegistry().Register(newJWTPlugin())
@@ -40,21 +35,19 @@ func (p *jwtPlugin) String() string {
 	return "jwt"
 }
 
-func (p *jwtPlugin) Flags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:    "auth2_jwt_pub_key",
-			Usage:   "Public key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
-		},
-	}
+func (p *jwtPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
+	return sutil.AppendFlag(flags, &cli.StringFlag{
+		Name:    "auth2_jwt_pub_key",
+		Usage:   "Public key PEM base64 encoded",
+		EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+	})
 }
 
 func (p *jwtPlugin) Init(cli *cli.Context, service micro.Service) error {
 	if len(cli.String("auth2_jwt_pub_key")) < 1 {
-		return errors.New("you must provide micro-auth-jwt-pub-key")
+		return errors.New("you must provide auth2_jwt_pub_key")
 	}
-	aPub, err := base64.StdEncoding.DecodeString(cli.String("micro-auth-jwt-pub-key"))
+	aPub, err := base64.StdEncoding.DecodeString(cli.String("auth2_jwt_pub_key"))
 	if err != nil {
 		return err
 	}
@@ -87,12 +80,12 @@ func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
 		return nil, errors.New("failed to get Authorization header from context")
 	}
 
-	aTokenString, _, err := util.ExtractToken(r.Header.Get("Authorization"))
+	aTokenString, _, err := sutil.ExtractToken(r.Header.Get("Authorization"))
 	if err != nil {
 		return nil, err
 	}
 
-	claims := jWTClaims{}
+	claims := sjwt.JWTClaims{}
 	_, err = jwt.ParseWithClaims(aTokenString, &claims, func(token *jwt.Token) (interface{}, error) {
 		return p.pubKey, nil
 	})
@@ -101,14 +94,14 @@ func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
 	}
 
 	cMD := map[string]string{
-		"Audience":  claims.Audience,
+		"Audience":  strings.Join(claims.Audience, ","),
 		"ExpiresAt": fmt.Sprintf("%d", claims.ExpiresAt),
 		"IssuedAt":  fmt.Sprintf("%d", claims.IssuedAt),
 		"NotBefore": fmt.Sprintf("%d", claims.NotBefore),
 		"Subject":   claims.Subject,
 	}
 
-	return &auth.User{Id: claims.Id, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
+	return &auth.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
 }
 
 func (p *jwtPlugin) ForwardContext(r *http.Request, ctx context.Context) (context.Context, error) {

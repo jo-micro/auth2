@@ -1,4 +1,4 @@
-package auth
+package auth2
 
 import (
 	"context"
@@ -9,21 +9,12 @@ import (
 	"go-micro.dev/v4/server"
 )
 
-type User struct {
-	Id       string            `json:"id,omitempty"`
-	Type     string            `json:"type,omitempty"`
-	Issuer   string            `json:"issuer,omitempty"`
-	Metadata map[string]string `json:"metadata,omitempty"`
-	Scopes   []string          `json:"scopes,omitempty"`
-	Roles    []string          `json:"roles,omitempty"`
-}
-
 type registryFuncs interface {
 	// String returns the name of the plugin
 	String() string
 
-	// Flags returns a list of cli.Flag's for micro.Service
-	Flags() []cli.Flag
+	// AppendFlags appends a list of cli.Flag's for micro.Service
+	AppendFlags(flags []cli.Flag) []cli.Flag
 
 	// Init should be executed in micro.Init
 	Init(cli *cli.Context, service micro.Service) error
@@ -35,20 +26,26 @@ type registryFuncs interface {
 	Health(ctx context.Context) (string, error)
 }
 
+type VerifierPlugin interface {
+	// Verify verifies that the user is allowed to access the request, it MUST handle AnonUser
+	Verify(ctx context.Context, u *User, req server.Request) error
+}
+
 // ClientPlugin is for services that act as client's behind GinRouter
 type ClientPlugin interface {
 	registryFuncs
+
+	// Set the Verifier for this Client
+	SetVerifier(v VerifierPlugin)
+
+	// ServiceContext adds the ServiceUser to the context (when using JWT's it will overwrite the Authorization Header)
+	ServiceContext(ctx context.Context) (context.Context, error)
 
 	// Inspect a context
 	Inspect(ctx context.Context) (*User, error)
 
 	// Wrapper returns the Auth Wrapper for your service
 	Wrapper() server.HandlerWrapper
-}
-
-// ServerPlugin is for authservers
-type ServerPlugin interface {
-	registryFuncs
 }
 
 // RouterPlugin is for routers that forward the token or do other stuff required by ClientPlugin

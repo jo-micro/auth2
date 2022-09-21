@@ -20,20 +20,16 @@ service AuthService {
     rpc UpdateRoles(UpdateRolesRequest) returns (User) {}
 
     rpc Register(RegisterRequest) returns (User) {}
-    rpc Login(LoginRequest) returns (TokenReply) {}
-    rpc Refresh(RefreshTokenRequest) returns (TokenReply) {}
+    rpc Login(LoginRequest) returns (Token) {}
+    rpc Refresh(RefreshTokenRequest) returns (Token) {}
 
-    rpc Inspect (TokenRequest) returns (User) {}
+    rpc Inspect (google.protobuf.Empty) returns (JWTClaims) {}
 }
 
 message KeysReply {
     string alg = 1;
     bytes accessPubKey = 2;
     bytes refreshPubKey = 3;
-}
-
-message TokenRequest {
-    string accessToken = 1;
 }
 
 message ListRequest {
@@ -43,10 +39,9 @@ message ListRequest {
 
 message User {
     string id = 1;
-    string type = 2;
-    string issuer = 3;
-    map<string, string> metadata = 4;
-    repeated string scopes = 5;
+    string username = 2;
+    string email = 3;
+    repeated string roles = 4;
 }
 
 message UserListReply {
@@ -57,6 +52,7 @@ message UserListReply {
 }
 
 message UserIDRequest {
+    // Optional if specified user must be admin
     string userId = 1;
 }
 
@@ -65,7 +61,7 @@ message UpdateRolesRequest {
     repeated string roles = 2;
 }
 
-message TokenReply {
+message Token {
     string accessToken = 1;
     int64 accessTokenExpiresAt = 2;
     string refreshToken = 3;
@@ -85,4 +81,13 @@ message LoginRequest {
 
 message RefreshTokenRequest {
     string refreshToken = 1;
+}
+
+message JWTClaims {
+    string id = 1;
+    string type = 2;
+    string issuer = 3;
+    map<string,string> metadata = 4;
+    repeated string scopes = 5;
+    repeated string roles = 6;
 }

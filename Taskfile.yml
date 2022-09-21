@@ -1,5 +1,7 @@
 version: '3'
 
+dotenv: [".env"]
+
 vars:
   GIT_TAG: 
     sh: git tag --points-at HEAD
@@ -25,21 +27,29 @@ tasks:
   volume:
     run: "once"
     cmds:
-      - podman volume inspect jo-micro_auth_go 1>/dev/null 2>&1 || podman volume create jo-micro_auth_go
+      - podman volume inspect jo-micro_auth2_go 1>/dev/null 2>&1 || podman volume create jo-micro_auth2_go
 
   builder:
     desc: Run something in the builder container for example "task builder -- go get -u ./..."
     cmds:
-      - podman run --rm -v "{{.VOLUME_PATH}}:/go:rw" -v "$PWD:/code" registry.fk.jochum.dev/jo-micro/builder:latest {{.CLI_ARGS}}
+      - podman run --rm 
+          -v "{{.BUILD_MOUNT_FOLDER_INT}}:{{.BUILD_MOUNT_FOLDER_INT}}" 
+          -v "{{.PWD}}:/code" 
+          -v "{{.VOLUME_PATH}}:/go:rw"
+          {{.DOCKER_ORG_JO_MICRO}}/builder:latest {{.CLI_ARGS}}
     vars:
       VOLUME_PATH:
-        sh: podman volume inspect jo-micro_auth_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+        sh: podman volume inspect jo-micro_auth2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+      BUILD_MOUNT_FOLDER_INT:
+        sh: realpath {{.BUILD_MOUNT_FOLDER}}
+    preconditions:
+      - test -n "{{.CLI_ARGS}}"
 
   protoc:
     run: "once"
     desc: Generate protobruf go files
     sources:
-      - ./proto/**/*.proto
+      - ./internal/proto/**/*.proto
     cmds:
       - task: builder
         vars:
@@ -51,16 +61,26 @@ tasks:
     sources:
       - ./go.sum
       - ./*.go
-      - ./service/microauthsqld/**/*.go
+      - ./service/microauth2sqld/**/*.go
       - ./internal/**/*.go
     cmds:
-      - podman build  -v "{{.VOLUME_PATH}}:/go:rw" --build-arg VERSION={{.VERSION}} -t registry.fk.jochum.dev/jo-micro/auth2-sql:latest -f ./docker/microauthsqld/Dockerfile .
+      - podman build 
+          -v "{{.BUILD_MOUNT_FOLDER_INT}}:{{.BUILD_MOUNT_FOLDER_INT}}" 
+          -v "{{.VOLUME_PATH}}:/go:rw" 
+          --build-arg VERSION={{.VERSION}}
+          --build-arg=DOCKER_IO={{.DOCKER_IO}}
+          --build-arg=DOCKER_ORG_JO_MICRO={{.DOCKER_ORG_JO_MICRO}}
+          -t {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest
+          -f ./docker/microauth2sqld/Dockerfile
+          .
     vars:
       VOLUME_PATH:
-        sh: podman volume inspect jo-micro_auth_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+        sh: podman volume inspect jo-micro_auth2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+      BUILD_MOUNT_FOLDER_INT:
+        sh: realpath {{.BUILD_MOUNT_FOLDER}}
 
   podman:
-    desc: Generate docker container for jo-micro/auth-sql tagged as registry.fk.jochum.dev/jo-micro/auth2-sql:latest
+    desc: Generate docker container for jo-micro/auth-sql tagged as {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest
     cmds:
       - task: build:authsql
 
@@ -88,11 +108,11 @@ tasks:
   keys:
     desc: Generate keys
     cmds:
-      - podman run registry.fk.jochum.dev/jo-micro/auth2-sql:latest microauthsqld --generate-keys
+      - podman run {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest microauth2sqld --auth2_generate_keys
 
   rm:
     desc: Remove all persistent data
     cmds:
-      - podman volume rm jo-micro_auth_go || exit 0
-      - podman image rm registry.fk.jochum.dev/jo-micro/auth2-sql:latest || exit 0
+      - podman volume rm jo-micro_auth2_go || exit 0
+      - podman image rm {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest || exit 0
       - rm -rf $PWD/.task

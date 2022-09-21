@@ -46,9 +46,9 @@ type AuthService interface {
 	Delete(ctx context.Context, in *UserIDRequest, opts ...client.CallOption) (*emptypb.Empty, error)
 	UpdateRoles(ctx context.Context, in *UpdateRolesRequest, opts ...client.CallOption) (*User, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...client.CallOption) (*User, error)
-	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*TokenReply, error)
-	Refresh(ctx context.Context, in *RefreshTokenRequest, opts ...client.CallOption) (*TokenReply, error)
-	Inspect(ctx context.Context, in *TokenRequest, opts ...client.CallOption) (*User, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*Token, error)
+	Refresh(ctx context.Context, in *RefreshTokenRequest, opts ...client.CallOption) (*Token, error)
+	Inspect(ctx context.Context, in *emptypb.Empty, opts ...client.CallOption) (*JWTClaims, error)
 }
 
 type authService struct {
@@ -113,9 +113,9 @@ func (c *authService) Register(ctx context.Context, in *RegisterRequest, opts ..
 	return out, nil
 }
 
-func (c *authService) Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*TokenReply, error) {
+func (c *authService) Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*Token, error) {
 	req := c.c.NewRequest(c.name, "AuthService.Login", in)
-	out := new(TokenReply)
+	out := new(Token)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -123,9 +123,9 @@ func (c *authService) Login(ctx context.Context, in *LoginRequest, opts ...clien
 	return out, nil
 }
 
-func (c *authService) Refresh(ctx context.Context, in *RefreshTokenRequest, opts ...client.CallOption) (*TokenReply, error) {
+func (c *authService) Refresh(ctx context.Context, in *RefreshTokenRequest, opts ...client.CallOption) (*Token, error) {
 	req := c.c.NewRequest(c.name, "AuthService.Refresh", in)
-	out := new(TokenReply)
+	out := new(Token)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -133,9 +133,9 @@ func (c *authService) Refresh(ctx context.Context, in *RefreshTokenRequest, opts
 	return out, nil
 }
 
-func (c *authService) Inspect(ctx context.Context, in *TokenRequest, opts ...client.CallOption) (*User, error) {
+func (c *authService) Inspect(ctx context.Context, in *emptypb.Empty, opts ...client.CallOption) (*JWTClaims, error) {
 	req := c.c.NewRequest(c.name, "AuthService.Inspect", in)
-	out := new(User)
+	out := new(JWTClaims)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -155,9 +155,9 @@ type AuthServiceHandler interface {
 	Delete(context.Context, *UserIDRequest, *emptypb.Empty) error
 	UpdateRoles(context.Context, *UpdateRolesRequest, *User) error
 	Register(context.Context, *RegisterRequest, *User) error
-	Login(context.Context, *LoginRequest, *TokenReply) error
-	Refresh(context.Context, *RefreshTokenRequest, *TokenReply) error
-	Inspect(context.Context, *TokenRequest, *User) error
+	Login(context.Context, *LoginRequest, *Token) error
+	Refresh(context.Context, *RefreshTokenRequest, *Token) error
+	Inspect(context.Context, *emptypb.Empty, *JWTClaims) error
 }
 
 func RegisterAuthServiceHandler(s server.Server, hdlr AuthServiceHandler, opts ...server.HandlerOption) error {
@@ -167,9 +167,9 @@ func RegisterAuthServiceHandler(s server.Server, hdlr AuthServiceHandler, opts .
 		Delete(ctx context.Context, in *UserIDRequest, out *emptypb.Empty) error
 		UpdateRoles(ctx context.Context, in *UpdateRolesRequest, out *User) error
 		Register(ctx context.Context, in *RegisterRequest, out *User) error
-		Login(ctx context.Context, in *LoginRequest, out *TokenReply) error
-		Refresh(ctx context.Context, in *RefreshTokenRequest, out *TokenReply) error
-		Inspect(ctx context.Context, in *TokenRequest, out *User) error
+		Login(ctx context.Context, in *LoginRequest, out *Token) error
+		Refresh(ctx context.Context, in *RefreshTokenRequest, out *Token) error
+		Inspect(ctx context.Context, in *emptypb.Empty, out *JWTClaims) error
 	}
 	type AuthService struct {
 		authService
@@ -202,14 +202,14 @@ func (h *authServiceHandler) Register(ctx context.Context, in *RegisterRequest, 
 	return h.AuthServiceHandler.Register(ctx, in, out)
 }
 
-func (h *authServiceHandler) Login(ctx context.Context, in *LoginRequest, out *TokenReply) error {
+func (h *authServiceHandler) Login(ctx context.Context, in *LoginRequest, out *Token) error {
 	return h.AuthServiceHandler.Login(ctx, in, out)
 }
 
-func (h *authServiceHandler) Refresh(ctx context.Context, in *RefreshTokenRequest, out *TokenReply) error {
+func (h *authServiceHandler) Refresh(ctx context.Context, in *RefreshTokenRequest, out *Token) error {
 	return h.AuthServiceHandler.Refresh(ctx, in, out)
 }
 
-func (h *authServiceHandler) Inspect(ctx context.Context, in *TokenRequest, out *User) error {
+func (h *authServiceHandler) Inspect(ctx context.Context, in *emptypb.Empty, out *JWTClaims) error {
 	return h.AuthServiceHandler.Inspect(ctx, in, out)
 }
