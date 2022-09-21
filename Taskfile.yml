@@ -61,8 +61,10 @@ tasks:
     sources:
       - ./go.sum
       - ./*.go
-      - ./service/microauth2sqld/**/*.go
+      - ./cmd/microauth2sqld/**/*.go
       - ./internal/**/*.go
+      - ./plugins/**/*.go
+      - ./shared/**/*.go
     cmds:
       - podman build 
           -v "{{.BUILD_MOUNT_FOLDER_INT}}:{{.BUILD_MOUNT_FOLDER_INT}}" 
@@ -116,3 +118,18 @@ tasks:
       - podman volume rm jo-micro_auth2_go || exit 0
       - podman image rm {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest || exit 0
       - rm -rf $PWD/.task
+
+  up:
+    desc: Run all containers
+    cmds:
+      - podman-compose up -d --remove-orphans
+  
+  ps:
+    desc: Show running containers
+    cmds:
+      - podman-compose ps
+      
+  down:
+    desc: Stopp all containers
+    cmds:
+      - podman-compose down

@@ -318,12 +318,49 @@ func main() {
 				c.String("auth2_sqld_router_basepath"),
 				router.NewRoute(
 					router.Method(router.MethodGet),
-					router.Path("/routes"),
-					router.Endpoint("routes"),
+					router.Path("/"),
+					router.Endpoint(authpb.AuthService.List),
+					router.Params("limit", "offset"),
+					router.AuthRequired(),
+				),
+				router.NewRoute(
+					router.Method(router.MethodPost),
+					router.Path("/login"),
+					router.Endpoint(authpb.AuthService.Login),
+				),
+				router.NewRoute(
+					router.Method(router.MethodPost),
+					router.Path("/register"),
+					router.Endpoint(authpb.AuthService.Register),
+				),
+				router.NewRoute(
+					router.Method(router.MethodPost),
+					router.Path("/refresh"),
+					router.Endpoint(authpb.AuthService.Refresh),
+				),
+				router.NewRoute(
+					router.Method(router.MethodDelete),
+					router.Path("/:userId"),
+					router.Endpoint(authpb.AuthService.Delete),
+					router.Params("userId"),
+					router.AuthRequired(),
+				),
+				router.NewRoute(
+					router.Method(router.MethodGet),
+					router.Path("/:userId"),
+					router.Endpoint(authpb.AuthService.Detail),
+					router.Params("userId"),
+					router.AuthRequired(),
+				),
+				router.NewRoute(
+					router.Method(router.MethodPut),
+					router.Path("/:userId/roles"),
+					router.Endpoint(authpb.AuthService.UpdateRoles),
+					router.Params("userId"),
+					router.AuthRequired(),
 				),
 			)
 			r.RegisterWithServer(srv.Server())
-
 			return nil
 		}),
 	}

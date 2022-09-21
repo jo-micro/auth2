@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  nats:
+    image: ${DOCKER_IO}/library/nats:2.8.4-alpine
+    command: -js -sd /data
+    volumes:
+      - nats:/data
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+
+  postgresd:
+    restart: ${DOCKER_RESTART}
+    image: ${DOCKER_ORG_WARZONE}/microlobby-postgresd:${MICROLOBBY_POSTGRES_TAG}
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresd:/var/lib/postgresql/data:cached
+
+  pgadmin:
+    restart: ${DOCKER_RESTART}
+    image: ${DOCKER_IO}/dpage/pgadmin4:6
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - 8086:80
+    links:
+      - postgresd
+    depends_on:
+      - postgresd
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+
+  auth:
+    restart: ${DOCKER_RESTART}
+    image: ${DOCKER_ORG_JO_MICRO}/auth2-sql:latest
+    environment:
+      - MICRO_AUTH2_CLIENT=jwt
+      - MICRO_AUTH2_DATABASE_DEBUG=${MICRO_AUTH2_DATABASE_DEBUG}
+      - MICRO_AUTH2_DATABASE_URL=${MICRO_AUTH2_DATABASE_URL}
+      - MICRO_AUTH2_JWT_ACCESS_EXPIRY=${MICRO_AUTH2_JWT_ACCESS_EXPIRY}
+      - MICRO_AUTH2_JWT_AUDIENCES=${MICRO_AUTH2_JWT_AUDIENCES}
+      - MICRO_AUTH2_JWT_PRIV_KEY=${MICRO_AUTH2_JWT_PRIV_KEY}
+      - MICRO_AUTH2_JWT_PUB_KEY=${MICRO_AUTH2_JWT_PUB_KEY}
+      - MICRO_AUTH2_JWT_REFRESH_EXPIRY=${MICRO_AUTH2_JWT_REFRESH_EXPIRY}
+      - MICRO_AUTH2_JWT_REFRESH_PRIV_KEY=${MICRO_AUTH2_JWT_REFRESH_PRIV_KEY}
+      - MICRO_AUTH2_JWT_REFRESH_PUB_KEY=${MICRO_AUTH2_JWT_REFRESH_PUB_KEY}
+      - MICRO_AUTH2_LOG_LEVEL=${LOG_LEVEL}
+      - MICRO_TRANSPORT=${MICRO_TRANSPORT}
+      - MICRO_REGISTRY=${MICRO_REGISTRY}
+      - MICRO_REGISTRY_ADDRESS=${MICRO_REGISTRY_ADDRESS}
+      - MICRO_BROKER=${MICRO_BROKER}
+      - MICRO_BROKER_ADDRESS=${MICRO_BROKER_ADDRESS}
+    links:
+      - postgresd
+      - nats
+    depends_on:
+      - postgresd
+      - nats
+
+  router:
+    restart: ${DOCKER_RESTART}
+    image: ${DOCKER_ORG_JO_MICRO}/router:latest
+    environment:
+      - MICRO_AUTH2_CLIENT=jwt
+      - MICRO_AUTH2_ROUTER=jwt
+      - MICRO_AUTH2_JWT_AUDIENCES=${MICRO_AUTH2_JWT_AUDIENCES}
+      - MICRO_AUTH2_JWT_PRIV_KEY=${MICRO_AUTH2_JWT_PRIV_KEY}
+      - MICRO_AUTH2_JWT_PUB_KEY=${MICRO_AUTH2_JWT_PUB_KEY}
+      - MICRO_TRANSPORT=${MICRO_TRANSPORT}
+      - MICRO_REGISTRY=${MICRO_REGISTRY}
+      - MICRO_REGISTRY_ADDRESS=${MICRO_REGISTRY_ADDRESS}
+      - MICRO_BROKER=${MICRO_BROKER}
+      - MICRO_BROKER_ADDRESS=${MICRO_BROKER_ADDRESS}
+      - MICRO_ROUTER_LISTEN=:8080
+      - MICRO_ROUTER_LOG_LEVEL=${LOG_LEVEL}
+    ports:
+      - 8080:8080
+    links:
+      - nats
+    depends_on:
+      - nats
+
+volumes:
+  nats: {}
+  postgresd: {}
+  pgadmin: {}
