@@ -1,0 +1,30 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  event:
+  - cron
+  - custom
+  - tag
+
+steps:
+- name: build
+  image: plugins/docker
+  settings:
+    registry: registry.fk.jochum.dev
+    username: robot$jo-micro+drone
+    password: 
+      from_secret: registry.fk.jochum.dev-robot
+    dockerfile: ./docker/microauth2sqld/Dockerfile
+    repo: registry.fk.jochum.dev/jo-micro/auth2-sql
+    build_args:
+    - DOCKER_IO=registry.fk.jochum.dev/docker_hub_cache
+    - DOCKER_ORG_JO_MICRO=registry.fk.jochum.dev/jo-micro
+    - VERSION=${DRONE_TAG:1}
+    auto_tag: true
