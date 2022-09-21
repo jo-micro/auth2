@@ -17,7 +17,7 @@ var myLogger *logrus.Logger = nil
 var initialized = false
 
 func AppendFlags(flags []cli.Flag) []cli.Flag {
-	return sutil.AppendFlag(flags, &cli.StringFlag{
+	return sutil.MergeFlag(flags, &cli.StringFlag{
 		Name:    "auth2_loglevel",
 		Value:   "info",
 		Usage:   "Logrus log level default 'info', {panic,fatal,error,warn,info,debug,trace} available",

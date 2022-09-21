@@ -44,7 +44,7 @@ func (p *jwtPlugin) String() string {
 }
 
 func (p *jwtPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
-	return sutil.AppendFlags(flags,
+	return sutil.MergeFlags(flags,
 		&cli.StringFlag{
 			Name:    "auth2_jwt_pub_key",
 			Usage:   "Public key PEM base64 encoded for access keys",

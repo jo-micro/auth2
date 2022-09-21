@@ -28,25 +28,25 @@ var SQLDB *sql.DB
 var Bun *bun.DB
 
 func AppendFlags(flags []cli.Flag) []cli.Flag {
-	flags = sutil.AppendFlag(flags, &cli.StringFlag{
+	flags = sutil.MergeFlag(flags, &cli.StringFlag{
 		Name:    "auth2_database_url",
 		Usage:   "bun Database URL",
 		EnvVars: []string{"MICRO_AUTH2_DATABASE_URL"},
 	})
-	flags = sutil.AppendFlag(flags, &cli.BoolFlag{
+	flags = sutil.MergeFlag(flags, &cli.BoolFlag{
 		Name:        "auth2_database_debug",
 		Usage:       "Set it to the debug the database queries",
 		EnvVars:     []string{"MICRO_AUTH2_DATABASE_DEBUG"},
 		DefaultText: "false",
 		Value:       false,
 	})
-	flags = sutil.AppendFlag(flags, &cli.StringFlag{
+	flags = sutil.MergeFlag(flags, &cli.StringFlag{
 		Name:    "auth2_migrations_table",
 		Value:   "schema_migrations",
 		Usage:   "Table to store migrations info",
 		EnvVars: []string{"MICRO_AUTH2_MIGRATIONS_TABLE"},
 	})
-	flags = sutil.AppendFlag(flags, &cli.StringFlag{
+	flags = sutil.MergeFlag(flags, &cli.StringFlag{
 		Name:    "auth2_migrations_dir",
 		Value:   "/migrations",
 		Usage:   "Folder which contains migrations",
