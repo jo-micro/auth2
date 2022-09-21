@@ -1,7 +1,10 @@
 package endpointroles
 
+import "github.com/sirupsen/logrus"
+
 type Options struct {
 	DefaultDeny bool
+	Logrus      *logrus.Logger
 }
 
 type Option func(o *Options)
@@ -9,6 +12,12 @@ type Option func(o *Options)
 func NoDefaultDeny() Option {
 	return func(o *Options) {
 		o.DefaultDeny = false
+	}
+}
+
+func WithLogrus(n *logrus.Logger) Option {
+	return func(o *Options) {
+		o.Logrus = n
 	}
 }
 

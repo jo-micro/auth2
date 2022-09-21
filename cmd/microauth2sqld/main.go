@@ -241,7 +241,9 @@ func main() {
 				ilogger.Logrus().Fatal(err)
 			}
 
-			authVerifier := endpointroles.NewVerifier()
+			authVerifier := endpointroles.NewVerifier(
+				endpointroles.WithLogrus(ilogger.Logrus()),
+			)
 			authVerifier.AddRules(
 				endpointroles.RouterRule,
 				endpointroles.NewRule(
