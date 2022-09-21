@@ -97,7 +97,7 @@ func main() {
 	auth2ClientReg := auth2.ClientAuthRegistry()
 	auth2ClientReg.ForcePlugin("jwt")
 
-	flags := []cli.Flag{
+	flags := ibun.AppendFlags(ilogger.AppendFlags(auth2ClientReg.AppendFlags([]cli.Flag{
 		// Generate
 		&cli.BoolFlag{
 			Name:  "auth2_generate_keys",
@@ -159,8 +159,7 @@ func main() {
 			Usage:   "Add and expect this JWT audience",
 			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
 		},
-	}
-	flags = ibun.AppendFlags(ilogger.AppendFlags(auth2ClientReg.AppendFlags(flags)))
+	})))
 
 	authHandler := handler.NewHandler()
 

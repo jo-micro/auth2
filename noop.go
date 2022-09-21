@@ -26,7 +26,7 @@ func (p *noopClientPlugin) String() string {
 }
 
 func (p *noopClientPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
-	return []cli.Flag{}
+	return flags
 }
 
 func (p *noopClientPlugin) Init(cli *cli.Context, service micro.Service) error {
@@ -71,7 +71,7 @@ func (p *noopRouterPlugin) String() string {
 }
 
 func (p *noopRouterPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
-	return []cli.Flag{}
+	return flags
 }
 
 func (p *noopRouterPlugin) Init(cli *cli.Context, service micro.Service) error {

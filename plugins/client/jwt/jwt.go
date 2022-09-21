@@ -44,21 +44,21 @@ func (p *jwtPlugin) String() string {
 }
 
 func (p *jwtPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
-	flags = sutil.AppendFlag(flags, &cli.StringFlag{
-		Name:    "auth2_jwt_pub_key",
-		Usage:   "Public key PEM base64 encoded for access keys",
-		EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
-	})
-	flags = sutil.AppendFlag(flags, &cli.StringFlag{
-		Name:    "auth2_jwt_priv_key",
-		Usage:   "Private key PEM base64 encoded for access keys",
-		EnvVars: []string{"MICRO_AUTH2_JWT_PRIV_KEY"},
-	})
-	return sutil.AppendFlag(flags, &cli.StringSliceFlag{
-		Name:    "auth2_jwt_audience",
-		Usage:   "Add and expect this JWT audience",
-		EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
-	})
+	return sutil.AppendFlags(flags,
+		&cli.StringFlag{
+			Name:    "auth2_jwt_pub_key",
+			Usage:   "Public key PEM base64 encoded for access keys",
+			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+		}, &cli.StringFlag{
+			Name:    "auth2_jwt_priv_key",
+			Usage:   "Private key PEM base64 encoded for access keys",
+			EnvVars: []string{"MICRO_AUTH2_JWT_PRIV_KEY"},
+		}, &cli.StringSliceFlag{
+			Name:    "auth2_jwt_audience",
+			Usage:   "Add and expect this JWT audience",
+			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
+		},
+	)
 }
 
 func (p *jwtPlugin) Init(cli *cli.Context, service micro.Service) error {

@@ -17,3 +17,11 @@ func AppendFlag(flags []cli.Flag, flag cli.Flag) []cli.Flag {
 
 	return append(flags, flag)
 }
+
+func AppendFlags(flags []cli.Flag, newFlags ...cli.Flag) []cli.Flag {
+	for _, f := range newFlags {
+		flags = AppendFlag(flags, f)
+	}
+
+	return flags
+}
