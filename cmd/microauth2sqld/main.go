@@ -268,7 +268,7 @@ func main() {
 				),
 				endpointroles.NewRule(
 					endpointroles.Endpoint(authpb.AuthService.Refresh),
-					endpointroles.RolesAllow(auth2.RolesUsersAndAdmin),
+					endpointroles.RolesAllow(auth2.RolesAllAndAnon),
 				),
 				endpointroles.NewRule(
 					endpointroles.Endpoint(authpb.AuthService.Register),
