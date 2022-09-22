@@ -45,7 +45,7 @@ type ClientPlugin interface {
 	Inspect(ctx context.Context) (*User, error)
 
 	// Wrapper returns the Auth Wrapper for your service
-	Wrapper() server.HandlerWrapper
+	WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error
 }
 
 // RouterPlugin is for routers that forward the token or do other stuff required by ClientPlugin

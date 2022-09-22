@@ -169,20 +169,16 @@ func (p *jwtPlugin) Inspect(ctx context.Context) (*auth2.User, error) {
 	return &auth2.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
 }
 
-func (p *jwtPlugin) Wrapper() server.HandlerWrapper {
-	return func(h server.HandlerFunc) server.HandlerFunc {
-		return func(ctx context.Context, req server.Request, rsp interface{}) error {
-			u, err := p.Inspect(ctx)
-			if err != nil {
-				u = auth2.AnonUser
-			}
-			ctx = context.WithValue(ctx, auth2.ContextUserKey{}, u)
-
-			if err = p.verifier.Verify(ctx, u, req); err != nil {
-				return err
-			}
-
-			return h(ctx, req, rsp)
-		}
+func (p *jwtPlugin) WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error {
+	u, err := p.Inspect(ctx)
+	if err != nil {
+		u = auth2.AnonUser
 	}
+	ctx = context.WithValue(ctx, auth2.ContextUserKey{}, u)
+
+	if err = p.verifier.Verify(ctx, u, req); err != nil {
+		return err
+	}
+
+	return h(ctx, req, rsp)
 }

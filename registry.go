@@ -7,6 +7,8 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4"
+	"go-micro.dev/v4/errors"
+	"go-micro.dev/v4/server"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
 )
 
@@ -99,4 +101,18 @@ func (r *AuthRegistry[T]) Stop() error {
 func (r *AuthRegistry[T]) Health(ctx context.Context) (string, error) {
 	m, _ := any(r.plugin).(registryFuncs)
 	return m.Health(ctx)
+}
+
+// Wrapper returns a server.HandleWrapper, this works only for ClientPlugin
+func (r *AuthRegistry[T]) Wrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return func(ctx context.Context, req server.Request, rsp interface{}) error {
+			m, ok := any(r.plugin).(ClientPlugin)
+			if !ok {
+				return errors.InternalServerError("auth2.registry.AuthRegistry.Wrapper:No such plugin", "No plugin found")
+			}
+
+			return m.WrapperFunc(h, ctx, req, rsp)
+		}
+	}
 }

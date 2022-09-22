@@ -52,12 +52,8 @@ func (p *noopClientPlugin) Inspect(ctx context.Context) (*User, error) {
 	return &User{Id: uuid.New().String(), Issuer: p.String()}, nil
 }
 
-func (p *noopClientPlugin) Wrapper() server.HandlerWrapper {
-	return func(h server.HandlerFunc) server.HandlerFunc {
-		return func(ctx context.Context, req server.Request, rsp interface{}) error {
-			return h(ctx, req, rsp)
-		}
-	}
+func (p *noopClientPlugin) WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error {
+	return h(ctx, req, rsp)
 }
 
 func newNoopRouterPlugin() RouterPlugin {

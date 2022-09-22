@@ -167,7 +167,7 @@ func main() {
 		micro.Name(config.Name),
 		micro.Version(config.Version),
 		micro.Flags(flags...),
-		micro.WrapHandler(auth2ClientReg.Plugin().Wrapper()),
+		micro.WrapHandler(auth2ClientReg.Wrapper()),
 		micro.Action(func(c *cli.Context) error {
 			// Start the logger
 			if err := ilogger.Start(c); err != nil {
