@@ -13,8 +13,8 @@ type registryFuncs interface {
 	// String returns the name of the plugin
 	String() string
 
-	// AppendFlags appends a list of cli.Flag's for micro.Service
-	AppendFlags(flags []cli.Flag) []cli.Flag
+	// MergeFlags merges a list of cli.Flag's for micro.Service
+	MergeFlags(flags []cli.Flag) []cli.Flag
 
 	// Init should be executed in micro.Init
 	Init(cli *cli.Context, service micro.Service) error

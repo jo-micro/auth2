@@ -97,7 +97,7 @@ func main() {
 	auth2ClientReg := auth2.ClientAuthRegistry()
 	auth2ClientReg.ForcePlugin("jwt")
 
-	flags := ibun.AppendFlags(ilogger.AppendFlags(auth2ClientReg.AppendFlags([]cli.Flag{
+	flags := ibun.AppendFlags(ilogger.AppendFlags(auth2ClientReg.MergeFlags([]cli.Flag{
 		// Generate
 		&cli.BoolFlag{
 			Name:  "auth2_generate_keys",

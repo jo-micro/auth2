@@ -49,7 +49,7 @@ func (r *AuthRegistry[T]) Register(plugin T) {
 }
 
 // Flags returns a list of cli.Flag's for micro.Service
-func (r *AuthRegistry[T]) AppendFlags(flags []cli.Flag) []cli.Flag {
+func (r *AuthRegistry[T]) MergeFlags(flags []cli.Flag) []cli.Flag {
 	if r.forcedPlugin == "" {
 		flags = sutil.MergeFlag(flags, &cli.StringFlag{
 			Name:    fmt.Sprintf("auth2_%s", r.kind),
@@ -61,7 +61,7 @@ func (r *AuthRegistry[T]) AppendFlags(flags []cli.Flag) []cli.Flag {
 
 	for _, p := range r.plugins {
 		if p2, ok := any(p).(registryFuncs); ok {
-			flags = p2.AppendFlags(flags)
+			flags = p2.MergeFlags(flags)
 		}
 	}
 

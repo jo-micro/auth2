@@ -25,7 +25,7 @@ func (p *noopClientPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopClientPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
+func (p *noopClientPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	return flags
 }
 
@@ -70,7 +70,7 @@ func (p *noopRouterPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopRouterPlugin) AppendFlags(flags []cli.Flag) []cli.Flag {
+func (p *noopRouterPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	return flags
 }
 
