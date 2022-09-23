@@ -11,21 +11,24 @@ import (
 )
 
 type EndpointRolesVerifier struct {
-	rules   map[string]Rule
-	options Options
+	rules         map[string]Rule
+	endpointnames []string
+	options       Options
 }
 
 func NewVerifier(opts ...Option) *EndpointRolesVerifier {
 	options := NewOptions(opts...)
 
 	return &EndpointRolesVerifier{
-		rules:   make(map[string]Rule, 0),
-		options: options,
+		rules:         make(map[string]Rule, 0),
+		endpointnames: []string{},
+		options:       options,
 	}
 }
 
 func (v *EndpointRolesVerifier) AddRules(rules ...Rule) {
 	for _, rule := range rules {
+		v.endpointnames = append(v.endpointnames, rule.Endpoint)
 		v.rules[rule.Endpoint] = rule
 	}
 }
@@ -51,16 +54,16 @@ func (v *EndpointRolesVerifier) Verify(ctx context.Context, u *auth2.User, req s
 		}
 
 		if v.options.DefaultDeny {
-			v.logrus().WithField("endpoint", req.Endpoint()).Debug("DefaultDeny: not in RolesAllow/Deny")
-			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No matching Role", "Unauthorized")
+			v.logrus().WithField("endpoint", req.Endpoint()).WithField("user_roles", u.Roles).WithField("roles_allow", ep.RolesAllow).Debug("DefaultDeny: No matching role")
+			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No matching role", "Unauthorized")
 		}
 	}
 
 	if !v.options.DefaultDeny {
-		v.logrus().WithField("endpoint", req.Endpoint()).Trace("DefaultAllow: no rule")
+		v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Trace("DefaultAllow: No rule")
 		return nil
 	}
 
-	v.logrus().WithField("endpoint", req.Endpoint()).Debug("DefaultDeny: no rule")
-	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule for EP", "Unauthorized")
+	v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Debug("DefaultDeny: no rule")
+	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule", "Unauthorized")
 }

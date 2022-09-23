@@ -237,7 +237,7 @@ func main() {
 				os.Exit(0)
 			}
 
-			if err := auth2ClientReg.Init(c, srv); err != nil {
+			if err := auth2ClientReg.Init(auth2.CliContext(c), auth2.Service(srv), auth2.Logrus(ilogger.Logrus())); err != nil {
 				ilogger.Logrus().Fatal(err)
 			}
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2"
-	"go-micro.dev/v4"
 	"go-micro.dev/v4/server"
 )
 
@@ -29,7 +28,7 @@ func (p *noopClientPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	return flags
 }
 
-func (p *noopClientPlugin) Init(cli *cli.Context, service micro.Service) error {
+func (p *noopClientPlugin) Init(opts ...InitOption) error {
 	return nil
 }
 
@@ -70,7 +69,7 @@ func (p *noopRouterPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	return flags
 }
 
-func (p *noopRouterPlugin) Init(cli *cli.Context, service micro.Service) error {
+func (p *noopRouterPlugin) Init(opts ...InitOption) error {
 	return nil
 }
 

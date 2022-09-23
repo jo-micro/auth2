@@ -11,7 +11,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/urfave/cli/v2"
-	"go-micro.dev/v4"
 	"go-micro.dev/v4/metadata"
 	"go-micro.dev/v4/server"
 	"jochum.dev/jo-micro/auth2"
@@ -61,21 +60,26 @@ func (p *jwtPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	)
 }
 
-func (p *jwtPlugin) Init(cli *cli.Context, service micro.Service) error {
-	if len(cli.String("auth2_jwt_pub_key")) < 1 || len(cli.String("auth2_jwt_priv_key")) < 1 {
-		return errors.New("you must provide auth2_jwt_(priv|pub)_key")
-	}
-
-	if cli.StringSlice("auth2_jwt_audience") == nil {
-		return errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
-	}
-
-	pub, priv, err := sjwt.DecodeKeyPair(cli.String("auth2_jwt_pub_key"), cli.String("auth2_jwt_priv_key"))
+func (p *jwtPlugin) Init(opts ...auth2.InitOption) error {
+	options, err := auth2.NewInitOptions(opts...)
 	if err != nil {
 		return err
 	}
 
-	p.audiences = cli.StringSlice("auth2_jwt_audience")
+	if len(options.CliContext.String("auth2_jwt_pub_key")) < 1 || len(options.CliContext.String("auth2_jwt_priv_key")) < 1 {
+		return errors.New("you must provide auth2_jwt_(priv|pub)_key")
+	}
+
+	if options.CliContext.StringSlice("auth2_jwt_audience") == nil {
+		return errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
+	}
+
+	pub, priv, err := sjwt.DecodeKeyPair(options.CliContext.String("auth2_jwt_pub_key"), options.CliContext.String("auth2_jwt_priv_key"))
+	if err != nil {
+		return err
+	}
+
+	p.audiences = options.CliContext.StringSlice("auth2_jwt_audience")
 	p.pubKey = pub
 	p.privKey = priv
 

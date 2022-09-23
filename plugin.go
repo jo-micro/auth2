@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/urfave/cli/v2"
-	"go-micro.dev/v4"
 	"go-micro.dev/v4/server"
 )
 
@@ -17,7 +16,7 @@ type registryFuncs interface {
 	MergeFlags(flags []cli.Flag) []cli.Flag
 
 	// Init should be executed in micro.Init
-	Init(cli *cli.Context, service micro.Service) error
+	Init(opts ...InitOption) error
 
 	// Stop should be executed after service.Run()
 	Stop() error

@@ -5,15 +5,16 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"go-micro.dev/v4"
+	"go-micro.dev/v4/errors"
 	"go-micro.dev/v4/metadata"
+	"jochum.dev/jo-micro/auth2"
 	auth "jochum.dev/jo-micro/auth2"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
@@ -28,7 +29,16 @@ func newJWTPlugin() auth.RouterPlugin {
 }
 
 type jwtPlugin struct {
-	pubKey any
+	pubKey  any
+	options auth2.InitOptions
+}
+
+func (p *jwtPlugin) logrus() *logrus.Logger {
+	if p.options.Logrus == nil {
+		return logrus.StandardLogger()
+	}
+
+	return p.options.Logrus
 }
 
 func (p *jwtPlugin) String() string {
@@ -43,18 +53,23 @@ func (p *jwtPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 	})
 }
 
-func (p *jwtPlugin) Init(cli *cli.Context, service micro.Service) error {
-	if len(cli.String("auth2_jwt_pub_key")) < 1 {
-		return errors.New("you must provide auth2_jwt_pub_key")
+func (p *jwtPlugin) Init(opts ...auth2.InitOption) error {
+	options, err := auth2.NewInitOptions(opts...)
+	if err != nil {
+		return err
 	}
-	aPub, err := base64.StdEncoding.DecodeString(cli.String("auth2_jwt_pub_key"))
+
+	if len(options.CliContext.String("auth2_jwt_pub_key")) < 1 {
+		return errors.InternalServerError("auth2/plugins/router/jwt.Init:No auth2_jwt_pub_key", "you must provide auth2_jwt_pub_key")
+	}
+	aPub, err := base64.StdEncoding.DecodeString(options.CliContext.String("auth2_jwt_pub_key"))
 	if err != nil {
 		return err
 	}
 
 	block, _ := pem.Decode(aPub)
 	if block == nil {
-		return errors.New("failed to parse PEM block containing the key")
+		return errors.InternalServerError("auth2/plugins/router/jwt.Init:PEM parsing", "failed to parse PEM block containing the key")
 	}
 
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -76,11 +91,12 @@ func (p *jwtPlugin) Health(ctx context.Context) (string, error) {
 }
 
 func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
-	if h := r.Header.Get("Authorization"); len(h) > 0 {
-		return nil, errors.New("failed to get Authorization header from context")
+	if _, ok := r.Header["Authorization"]; !ok {
+		p.logrus().WithField("headers", r.Header).Debug("empty or no Authorization header in request")
+		return nil, errors.InternalServerError("auth2/plugins/router/jwt.Inspect", "empty or no Authorization header in request")
 	}
 
-	aTokenString, _, err := sutil.ExtractToken(r.Header.Get("Authorization"))
+	aTokenString, _, err := sutil.ExtractToken(r.Header["Authorization"][0])
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +121,7 @@ func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
 }
 
 func (p *jwtPlugin) ForwardContext(r *http.Request, ctx context.Context) (context.Context, error) {
-	_, err := p.Inspect(r)
+	u, err := p.Inspect(r)
 	if err != nil {
 		return ctx, err
 	}
@@ -117,6 +133,8 @@ func (p *jwtPlugin) ForwardContext(r *http.Request, ctx context.Context) (contex
 	if v := r.Header.Get("X-Forwarded-For"); len(v) > 0 {
 		md["X-Fowarded-For"] = v
 	}
+
+	p.logrus().WithField("username", u.Metadata["Subject"]).Trace("Forwarding user")
 
 	return metadata.MergeContext(ctx, md, true), nil
 }

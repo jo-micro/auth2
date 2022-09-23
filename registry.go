@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
-	"go-micro.dev/v4"
 	"go-micro.dev/v4/errors"
 	"go-micro.dev/v4/server"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
@@ -76,9 +75,14 @@ func (r *AuthRegistry[T]) Plugin() T {
 }
 
 // Init should be executed in micro.Init
-func (r *AuthRegistry[T]) Init(cli *cli.Context, service micro.Service) error {
+func (r *AuthRegistry[T]) Init(opts ...InitOption) error {
+	options, err := NewInitOptions(opts...)
+	if err != nil {
+		return err
+	}
+
 	if r.forcedPlugin == "" {
-		plugin := cli.String(fmt.Sprintf("auth2_%s", r.kind))
+		plugin := options.CliContext.String(fmt.Sprintf("auth2_%s", r.kind))
 		m, ok := r.plugins[plugin]
 		if !ok {
 			return fmt.Errorf("unknown MICRO_AUTH2_%s plugin '%s'", strings.ToUpper(r.kind), plugin)
@@ -88,7 +92,7 @@ func (r *AuthRegistry[T]) Init(cli *cli.Context, service micro.Service) error {
 	}
 
 	m2, _ := any(r.plugin).(registryFuncs)
-	return m2.Init(cli, service)
+	return m2.Init(opts...)
 }
 
 // Stop should be executed after service.Run()
