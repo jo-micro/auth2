@@ -9,9 +9,10 @@ import (
 	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/log/logrusadapter"
-	"github.com/jackc/pgx/stdlib"
+	pgxLogrus "github.com/jackc/pgx-logrus"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/extra/bundebug"
@@ -68,18 +69,17 @@ func Start(cli *cli.Context) error {
 	if cli.String("auth2_database_url") == "" {
 		return errors.InternalServerError("internal/ibun.Start|sqltype.empty", "MICRO_AUTH2_DATABASE_URL is required")
 	} else if strings.HasPrefix(cli.String("auth2_database_url"), "postgres://") {
-		config, err := pgx.ParseURI(cli.String("auth2_database_url"))
+		config, err := pgx.ParseConfig(cli.String("auth2_database_url"))
 		if err != nil {
 			return err
 		}
 
-		config.PreferSimpleProtocol = true
-
 		if ilogger.Intialized() {
-			config.Logger = logrusadapter.NewLogger(ilogger.Logrus())
+			config.Tracer = &tracelog.TraceLog{Logger: pgxLogrus.NewLogger(ilogger.Logrus()), LogLevel: tracelog.LogLevelInfo}
 		}
 
-		SQLDB = stdlib.OpenDB(config)
+		connStr := stdlib.RegisterConnConfig(config)
+		SQLDB, _ := sql.Open("pgx", connStr)
 		driver, err := migratePostgres.WithInstance(SQLDB, &migratePostgres.Config{MigrationsTable: cli.String("auth2_migrations_table")})
 		if err != nil {
 			return err

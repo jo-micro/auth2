@@ -330,7 +330,7 @@ func main() {
 					router.Method(router.MethodPost),
 					router.Path("/login"),
 					router.Endpoint(authpb.AuthService.Login),
-					router.RatelimitClientIP("10-M", "30-H", "100-D"),
+					router.RatelimitClientIP("1-S", "10-M", "30-H", "100-D"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodPost),
@@ -350,7 +350,7 @@ func main() {
 					router.Endpoint(authpb.AuthService.Delete),
 					router.Params("userId"),
 					router.AuthRequired(),
-					router.RatelimitClientIP("10-M"),
+					router.RatelimitClientIP("1-S", "10-M"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodGet),
