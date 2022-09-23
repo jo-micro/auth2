@@ -108,7 +108,7 @@ tasks:
           CLI_ARGS: go fmt ./...
 
   keys:
-    desc: Generate keys
+    desc: Generate JWT keys (use --auth2_generate_format=RSA4096 for RSA)
     cmds:
       - podman run {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest microauth2sqld --auth2_generate_keys
 
