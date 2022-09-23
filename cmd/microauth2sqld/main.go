@@ -324,21 +324,25 @@ func main() {
 					router.Endpoint(authpb.AuthService.List),
 					router.Params("limit", "offset"),
 					router.AuthRequired(),
+					router.RatelimitClientIP("1-M"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodPost),
 					router.Path("/login"),
 					router.Endpoint(authpb.AuthService.Login),
+					router.RatelimitClientIP("10-M", "30-H", "100-D"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodPost),
 					router.Path("/register"),
 					router.Endpoint(authpb.AuthService.Register),
+					router.RatelimitClientIP("1-M", "10-H", "50-D"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodPost),
 					router.Path("/refresh"),
 					router.Endpoint(authpb.AuthService.Refresh),
+					router.RatelimitClientIP("1-M", "10-H", "50-D"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodDelete),
@@ -346,6 +350,7 @@ func main() {
 					router.Endpoint(authpb.AuthService.Delete),
 					router.Params("userId"),
 					router.AuthRequired(),
+					router.RatelimitClientIP("10-M"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodGet),
@@ -353,6 +358,7 @@ func main() {
 					router.Endpoint(authpb.AuthService.Detail),
 					router.Params("userId"),
 					router.AuthRequired(),
+					router.RatelimitClientIP("100-M"),
 				),
 				router.NewRoute(
 					router.Method(router.MethodPut),
@@ -360,6 +366,7 @@ func main() {
 					router.Endpoint(authpb.AuthService.UpdateRoles),
 					router.Params("userId"),
 					router.AuthRequired(),
+					router.RatelimitClientIP("1-M"),
 				),
 			)
 			r.RegisterWithServer(srv.Server())
