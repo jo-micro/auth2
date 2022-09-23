@@ -21,7 +21,7 @@ require (
 	go-micro.dev/v4 v4.8.1
 	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
 	google.golang.org/protobuf v1.28.1
-	jochum.dev/jo-micro/router v0.2.4
+	jochum.dev/jo-micro/router v0.3.6
 )
 
 require (
