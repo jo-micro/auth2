@@ -210,6 +210,7 @@ func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Toke
 		return err
 	}
 
+	out.Id = user.ID.String()
 	out.RefreshToken = refreshSignedToken
 	out.RefreshTokenExpiresAt = refreshClaims.ExpiresAt.Unix()
 	out.AccessToken = accessSignedToken
