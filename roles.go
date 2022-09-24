@@ -10,6 +10,7 @@ var RolesAdmin = []string{ROLE_ADMIN, ROLE_SUPERADMIN}
 var RolesUsersAndAdmin = []string{ROLE_USER, ROLE_ADMIN, ROLE_SUPERADMIN}
 var RolesServiceAndUsersAndAdmin = []string{ROLE_SERVICE, ROLE_USER, ROLE_ADMIN, ROLE_SUPERADMIN}
 var RolesServiceAndAdmin = []string{ROLE_SERVICE, ROLE_ADMIN, ROLE_SUPERADMIN}
+var RolesServiceAndSuperadmin = []string{ROLE_SERVICE, ROLE_SUPERADMIN}
 var RolesAllAndAnon = []string{ROLE_SERVICE, ROLE_SUPERADMIN, ROLE_ADMIN, ROLE_USER, ROLE_ANONYMOUS}
 
 func HasRole(user *User, role string) bool {
