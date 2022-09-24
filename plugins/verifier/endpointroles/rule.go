@@ -2,7 +2,7 @@ package endpointroles
 
 import (
 	"jochum.dev/jo-micro/auth2"
-	"jochum.dev/jo-micro/auth2/internal/util"
+	"jochum.dev/jo-micro/auth2/shared/sutil"
 )
 
 // Add this on every Server that exposes RouterClientService
@@ -21,7 +21,7 @@ type RuleOption func(e *Rule)
 
 func Endpoint(n interface{}) RuleOption {
 	return func(e *Rule) {
-		e.Endpoint = util.ReflectFunctionName(n)
+		e.Endpoint = sutil.ReflectFunctionName(n)
 	}
 }
 

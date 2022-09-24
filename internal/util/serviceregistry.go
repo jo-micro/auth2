@@ -3,6 +3,7 @@ package util
 import (
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/registry"
+	"jochum.dev/jo-micro/auth2/shared/sutil"
 )
 
 type ServiceListResult map[*registry.Service][]*registry.Endpoint
@@ -59,7 +60,7 @@ func FindByEndpoint(service micro.Service, endpoint interface{}) ([]*registry.Se
 		return []*registry.Service{}, err
 	}
 
-	strEndpoint := ReflectFunctionName(endpoint)
+	strEndpoint := sutil.ReflectFunctionName(endpoint)
 	result := []*registry.Service{}
 	for s, eps := range services {
 		for _, ep := range eps {
