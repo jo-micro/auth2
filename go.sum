@@ -1928,6 +1928,8 @@ jochum.dev/jo-micro/router v0.3.6 h1:MgT8k7/Hrxpk+nfit3wg+X7oduo4DsM/uG6XT7Ca2ys
 jochum.dev/jo-micro/router v0.3.6/go.mod h1:5zHbSgMEUKmF8lodzyg4XXXRxFi8QtOM9Ci55dRXs2I=
 jochum.dev/jo-micro/router v0.3.7 h1:4AE6PEp9gRMgGUAFkvJWDuT2Tk0cf/kbg12xBPC94OE=
 jochum.dev/jo-micro/router v0.3.7/go.mod h1:13ONF6lTtaEm6GpEkEIf+8zY4jL26VhavoU5hQX4itw=
+jochum.dev/jo-micro/router v0.3.8 h1:sBSuQ/VpFxMatRvow9gAlYLeE5la7Y0WB+Eh2MqP73Q=
+jochum.dev/jo-micro/router v0.3.8/go.mod h1:C5YjdFEIZtObsgFymCyTWOI+rLrUZS1LL9K5oYX8DtE=
 k8s.io/api v0.20.1/go.mod h1:KqwcCVogGxQY3nBlRpwt+wpAMF/KjaCc7RpywacvqUo=
 k8s.io/api v0.20.4/go.mod h1:++lNL1AJMkDymriNniQsWRkMDzRaX2Y/POTUi8yvqYQ=
 k8s.io/api v0.20.6/go.mod h1:X9e8Qag6JV/bL5G6bU8sdVRltWKmdHsFUGS3eVndqE8=
