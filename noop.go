@@ -85,6 +85,6 @@ func (p *noopRouterPlugin) Inspect(r *http.Request) (*User, error) {
 	return &User{Id: uuid.New().String(), Issuer: p.String()}, nil
 }
 
-func (p *noopRouterPlugin) ForwardContext(r *http.Request, ctx context.Context) (context.Context, error) {
+func (p *noopRouterPlugin) ForwardContext(u *User, r *http.Request, ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }

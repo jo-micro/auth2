@@ -55,5 +55,5 @@ type RouterPlugin interface {
 	Inspect(r *http.Request) (*User, error)
 
 	// ForwardContext should forward all required informations from http.Request to the resulting context.
-	ForwardContext(r *http.Request, ctx context.Context) (context.Context, error)
+	ForwardContext(u *User, r *http.Request, ctx context.Context) (context.Context, error)
 }

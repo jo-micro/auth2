@@ -120,12 +120,7 @@ func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
 	return &auth.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
 }
 
-func (p *jwtPlugin) ForwardContext(r *http.Request, ctx context.Context) (context.Context, error) {
-	u, err := p.Inspect(r)
-	if err != nil {
-		return ctx, err
-	}
-
+func (p *jwtPlugin) ForwardContext(u *auth2.User, r *http.Request, ctx context.Context) (context.Context, error) {
 	md := metadata.Metadata{
 		"Authorization": r.Header.Get("Authorization"),
 	}

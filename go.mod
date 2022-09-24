@@ -20,13 +20,13 @@ require (
 	github.com/uptrace/bun/extra/bundebug v1.1.8
 	github.com/urfave/cli/v2 v2.16.3
 	go-micro.dev/v4 v4.8.1
-	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
+	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
 	google.golang.org/protobuf v1.28.1
-	jochum.dev/jo-micro/router v0.3.6
+	jochum.dev/jo-micro/router v0.3.7
 )
 
 require (
-	github.com/Microsoft/go-winio v0.5.2 // indirect
+	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220824120805-4b6e5c587895 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
@@ -79,8 +79,8 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220921203646-d300de134e69 // indirect
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
+	golang.org/x/net v0.0.0-20220923203811-8be639271d50 // indirect
+	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7 // indirect
 	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
