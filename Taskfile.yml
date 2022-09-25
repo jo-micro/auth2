@@ -69,6 +69,7 @@ tasks:
       - podman build 
           -v "{{.BUILD_MOUNT_FOLDER_INT}}:{{.BUILD_MOUNT_FOLDER_INT}}" 
           -v "{{.VOLUME_PATH}}:/go:rw" 
+          --build-arg CACHEBUST={{.DATE}}
           --build-arg VERSION={{.VERSION}}
           --build-arg=DOCKER_IO={{.DOCKER_IO}}
           --build-arg=DOCKER_ORG_JO_MICRO={{.DOCKER_ORG_JO_MICRO}}
@@ -76,6 +77,8 @@ tasks:
           -f ./docker/microauth2sqld/Dockerfile
           .
     vars:
+      DATE:
+        sh: date -u -Iseconds
       VOLUME_PATH:
         sh: podman volume inspect jo-AUTH2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
       BUILD_MOUNT_FOLDER_INT:

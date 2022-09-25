@@ -10,6 +10,8 @@ RUN useradd appuser
 ARG VERSION
 COPY . /code/
 WORKDIR /code
+
+ARG CACHEBUST=1
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -installsuffix cgo -ldflags="-w -s -X 'jochum.dev/jo-micro/auth2/cmd/microauth2sqld/config.Version=$VERSION'" -o /usr/local/bin/microauth2sqld jochum.dev/jo-micro/auth2/cmd/microauth2sqld
 
 # STEP 2 build a small image
