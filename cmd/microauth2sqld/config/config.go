@@ -5,6 +5,6 @@ var (
 )
 
 const (
-	Name    = "go.micro.auth"
+	Name    = "jo.micro.auth"
 	PkgPath = "jochum.dev/jo-micro/auth2"
 )

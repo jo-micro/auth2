@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
-	"jochum.dev/jo-micro/auth2/internal/ibun"
+	"jochum.dev/jo-micro/buncomponent"
 )
 
 type User struct {
@@ -29,7 +29,7 @@ type User struct {
 func UserList(ctx context.Context, limit, offset uint64) ([]User, error) {
 	// Get the data from the db.
 	var users []User
-	err := ibun.Bun.NewSelect().
+	err := buncomponent.Must(ctx).Bun().NewSelect().
 		Model(&users).
 		ColumnExpr("u.*").
 		ColumnExpr("array(SELECT r.name FROM users_roles AS ur LEFT JOIN roles AS r ON ur.role_id = r.id WHERE ur.user_id = u.id) AS roles").
@@ -44,7 +44,7 @@ func UserList(ctx context.Context, limit, offset uint64) ([]User, error) {
 
 func UserDetail(ctx context.Context, id string) (*User, error) {
 	user := User{}
-	err := ibun.Bun.NewSelect().
+	err := buncomponent.Must(ctx).Bun().NewSelect().
 		Model(&user).
 		ColumnExpr("u.*").
 		ColumnExpr("array(SELECT r.name FROM users_roles AS ur LEFT JOIN roles AS r ON ur.role_id = r.id WHERE ur.user_id = u.id) AS roles").
@@ -61,7 +61,7 @@ func UserDetail(ctx context.Context, id string) (*User, error) {
 
 func UserDelete(ctx context.Context, id string) error {
 	user := User{}
-	_, err := ibun.Bun.NewDelete().Model(&user).Where("id = ?", id).Exec(ctx)
+	_, err := buncomponent.Must(ctx).Bun().NewDelete().Model(&user).Where("id = ?", id).Exec(ctx)
 	return err
 }
 
@@ -77,7 +77,7 @@ func UserUpdateRoles(ctx context.Context, id string, roles []string) (*User, err
 	}
 
 	// Delete all current roles
-	_, err := ibun.Bun.NewDelete().Table("users_roles").Where("user_id = ?", id).Exec(ctx)
+	_, err := buncomponent.Must(ctx).Bun().NewDelete().Table("users_roles").Where("user_id = ?", id).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func UserUpdateRoles(ctx context.Context, id string, roles []string) (*User, err
 			"user_id": id,
 			"role_id": roleId,
 		}
-		_, err = ibun.Bun.NewInsert().Model(&values).TableExpr("users_roles").Exec(ctx)
+		_, err = buncomponent.Must(ctx).Bun().NewInsert().Model(&values).TableExpr("users_roles").Exec(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func UserUpdateRoles(ctx context.Context, id string, roles []string) (*User, err
 
 func UserFindByUsername(ctx context.Context, username string) (*User, error) {
 	user := User{}
-	err := ibun.Bun.NewSelect().
+	err := buncomponent.Must(ctx).Bun().NewSelect().
 		Model(&user).
 		ColumnExpr("u.*").
 		ColumnExpr("array(SELECT r.name FROM users_roles AS ur LEFT JOIN roles AS r ON ur.role_id = r.id WHERE ur.user_id = u.id) AS roles").
@@ -121,7 +121,7 @@ func UserFindByUsername(ctx context.Context, username string) (*User, error) {
 
 func UserFindById(ctx context.Context, id string) (*User, error) {
 	user := User{}
-	err := ibun.Bun.NewSelect().
+	err := buncomponent.Must(ctx).Bun().NewSelect().
 		Model(&user).
 		ColumnExpr("u.*").
 		ColumnExpr("array(SELECT r.name FROM users_roles AS ur LEFT JOIN roles AS r ON ur.role_id = r.id WHERE ur.user_id = u.id) AS roles").
@@ -142,7 +142,7 @@ func UserCreate(ctx context.Context, username, password, email string, roles []s
 	user.Username = username
 	user.Password = password
 	user.Email = email
-	_, err := ibun.Bun.NewInsert().Model(&user).Exec(ctx, &user)
+	_, err := buncomponent.Must(ctx).Bun().NewInsert().Model(&user).Exec(ctx, &user)
 	if err != nil {
 		return nil, err
 	}

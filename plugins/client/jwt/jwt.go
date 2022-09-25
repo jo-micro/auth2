@@ -17,13 +17,10 @@ import (
 	"jochum.dev/jo-micro/auth2/plugins/verifier/endpointroles"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
+	"jochum.dev/jo-micro/components"
 )
 
-func init() {
-	auth2.ClientAuthRegistry().Register(newJWTPlugin())
-}
-
-func newJWTPlugin() auth2.ClientPlugin {
+func New() auth2.ClientPlugin {
 	return &jwtPlugin{
 		verifier: endpointroles.NewVerifier(
 			endpointroles.NoDefaultDeny(),
@@ -42,8 +39,8 @@ func (p *jwtPlugin) String() string {
 	return "jwt"
 }
 
-func (p *jwtPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
-	return sutil.MergeFlags(flags,
+func (p *jwtPlugin) Flags(r *components.Registry) []cli.Flag {
+	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    "auth2_jwt_pub_key",
 			Usage:   "Public key PEM base64 encoded for access keys",
@@ -57,29 +54,24 @@ func (p *jwtPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
 			Usage:   "Add and expect this JWT audience",
 			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
 		},
-	)
+	}
 }
 
-func (p *jwtPlugin) Init(opts ...auth2.InitOption) error {
-	options, err := auth2.NewInitOptions(opts...)
-	if err != nil {
-		return err
-	}
-
-	if len(options.CliContext.String("auth2_jwt_pub_key")) < 1 || len(options.CliContext.String("auth2_jwt_priv_key")) < 1 {
+func (p *jwtPlugin) Init(r *components.Registry, cli *cli.Context) error {
+	if len(cli.String("auth2_jwt_pub_key")) < 1 || len(cli.String("auth2_jwt_priv_key")) < 1 {
 		return errors.New("you must provide auth2_jwt_(priv|pub)_key")
 	}
 
-	if options.CliContext.StringSlice("auth2_jwt_audience") == nil {
+	if cli.StringSlice("auth2_jwt_audience") == nil {
 		return errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
 	}
 
-	pub, priv, err := sjwt.DecodeKeyPair(options.CliContext.String("auth2_jwt_pub_key"), options.CliContext.String("auth2_jwt_priv_key"))
+	pub, priv, err := sjwt.DecodeKeyPair(cli.String("auth2_jwt_pub_key"), cli.String("auth2_jwt_priv_key"))
 	if err != nil {
 		return err
 	}
 
-	p.audiences = options.CliContext.StringSlice("auth2_jwt_audience")
+	p.audiences = cli.StringSlice("auth2_jwt_audience")
 	p.pubKey = pub
 	p.privKey = priv
 
@@ -90,8 +82,8 @@ func (p *jwtPlugin) Stop() error {
 	return nil
 }
 
-func (p *jwtPlugin) Health(ctx context.Context) (string, error) {
-	return "All fine", nil
+func (p *jwtPlugin) Health(ctx context.Context) error {
+	return nil
 }
 
 func (p *jwtPlugin) SetVerifier(v auth2.VerifierPlugin) {
@@ -173,7 +165,7 @@ func (p *jwtPlugin) Inspect(ctx context.Context) (*auth2.User, error) {
 	return &auth2.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
 }
 
-func (p *jwtPlugin) WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error {
+func (p *jwtPlugin) WrapHandlerFunc(ctx context.Context, req server.Request, rsp interface{}) error {
 	u, err := p.Inspect(ctx)
 	if err != nil {
 		u = auth2.AnonUser
@@ -184,5 +176,5 @@ func (p *jwtPlugin) WrapperFunc(h server.HandlerFunc, ctx context.Context, req s
 		return err
 	}
 
-	return h(ctx, req, rsp)
+	return nil
 }

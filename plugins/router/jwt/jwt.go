@@ -10,59 +10,46 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4/errors"
 	"go-micro.dev/v4/metadata"
 	"jochum.dev/jo-micro/auth2"
-	auth "jochum.dev/jo-micro/auth2"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
+	"jochum.dev/jo-micro/components"
+	"jochum.dev/jo-micro/logruscomponent"
 )
 
-func init() {
-	auth.RouterAuthRegistry().Register(newJWTPlugin())
-}
-
-func newJWTPlugin() auth.RouterPlugin {
+func New() auth2.RouterPlugin {
 	return new(jwtPlugin)
 }
 
 type jwtPlugin struct {
-	pubKey  any
-	options auth2.InitOptions
-}
-
-func (p *jwtPlugin) logrus() *logrus.Logger {
-	if p.options.Logrus == nil {
-		return logrus.StandardLogger()
-	}
-
-	return p.options.Logrus
+	cReg   *components.Registry
+	pubKey any
 }
 
 func (p *jwtPlugin) String() string {
 	return "jwt"
 }
 
-func (p *jwtPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
-	return sutil.MergeFlag(flags, &cli.StringFlag{
-		Name:    "auth2_jwt_pub_key",
-		Usage:   "Public key PEM base64 encoded",
-		EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
-	})
+func (p *jwtPlugin) Flags(r *components.Registry) []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:    "auth2_jwt_pub_key",
+			Usage:   "Public key PEM base64 encoded",
+			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+		},
+	}
 }
 
-func (p *jwtPlugin) Init(opts ...auth2.InitOption) error {
-	options, err := auth2.NewInitOptions(opts...)
-	if err != nil {
-		return err
-	}
+func (p *jwtPlugin) Init(r *components.Registry, cli *cli.Context) error {
+	p.cReg = r
 
-	if len(options.CliContext.String("auth2_jwt_pub_key")) < 1 {
+	if len(cli.String("auth2_jwt_pub_key")) < 1 {
 		return errors.InternalServerError("auth2/plugins/router/jwt.Init:No auth2_jwt_pub_key", "you must provide auth2_jwt_pub_key")
 	}
-	aPub, err := base64.StdEncoding.DecodeString(options.CliContext.String("auth2_jwt_pub_key"))
+	aPub, err := base64.StdEncoding.DecodeString(cli.String("auth2_jwt_pub_key"))
 	if err != nil {
 		return err
 	}
@@ -86,13 +73,13 @@ func (p *jwtPlugin) Stop() error {
 	return nil
 }
 
-func (p *jwtPlugin) Health(ctx context.Context) (string, error) {
-	return "All fine", nil
+func (p *jwtPlugin) Health(ctx context.Context) error {
+	return nil
 }
 
-func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
+func (p *jwtPlugin) Inspect(r *http.Request) (*auth2.User, error) {
 	if _, ok := r.Header["Authorization"]; !ok {
-		p.logrus().WithField("headers", r.Header).Debug("empty or no Authorization header in request")
+		logruscomponent.MustReg(p.cReg).Logger().WithField("headers", r.Header).Debug("empty or no Authorization header in request")
 		return nil, errors.InternalServerError("auth2/plugins/router/jwt.Inspect", "empty or no Authorization header in request")
 	}
 
@@ -117,7 +104,7 @@ func (p *jwtPlugin) Inspect(r *http.Request) (*auth.User, error) {
 		"Subject":   claims.Subject,
 	}
 
-	return &auth.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
+	return &auth2.User{Id: claims.ID, Type: claims.Type, Issuer: claims.Issuer, Metadata: cMD, Scopes: claims.Scopes, Roles: claims.Roles}, nil
 }
 
 func (p *jwtPlugin) ForwardContext(u *auth2.User, r *http.Request, ctx context.Context) (context.Context, error) {
@@ -129,7 +116,7 @@ func (p *jwtPlugin) ForwardContext(u *auth2.User, r *http.Request, ctx context.C
 		md["X-Fowarded-For"] = v
 	}
 
-	p.logrus().WithField("username", u.Metadata["Subject"]).Trace("Forwarding user")
+	logruscomponent.MustReg(p.cReg).Logger().WithField("username", u.Metadata["Subject"]).Trace("Forwarding user")
 
 	return metadata.MergeContext(ctx, md, true), nil
 }

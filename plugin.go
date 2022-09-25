@@ -6,6 +6,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go-micro.dev/v4/server"
+	"jochum.dev/jo-micro/components"
 )
 
 type registryFuncs interface {
@@ -13,16 +14,16 @@ type registryFuncs interface {
 	String() string
 
 	// MergeFlags merges a list of cli.Flag's for micro.Service
-	MergeFlags(flags []cli.Flag) []cli.Flag
+	Flags(r *components.Registry) []cli.Flag
 
 	// Init should be executed in micro.Init
-	Init(opts ...InitOption) error
+	Init(r *components.Registry, cli *cli.Context) error
 
 	// Stop should be executed after service.Run()
 	Stop() error
 
 	// Health returns the health of the plugin
-	Health(ctx context.Context) (string, error)
+	Health(ctx context.Context) error
 }
 
 type VerifierPlugin interface {
@@ -43,8 +44,8 @@ type ClientPlugin interface {
 	// Inspect a context
 	Inspect(ctx context.Context) (*User, error)
 
-	// Wrapper returns the Auth Wrapper for your service
-	WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error
+	// WrapHandlerFunc runs the authentication
+	WrapHandlerFunc(ctx context.Context, req server.Request, rsp interface{}) error
 }
 
 // RouterPlugin is for routers that forward the token or do other stuff required by ClientPlugin

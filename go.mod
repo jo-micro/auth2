@@ -13,7 +13,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx-logrus v0.0.0-20220919124836-b099d8ce75da
-	github.com/jackc/pgx/v5 v5.0.0
+	github.com/jackc/pgx/v5 v5.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/pgdialect v1.1.8
@@ -22,7 +22,10 @@ require (
 	go-micro.dev/v4 v4.8.1
 	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
 	google.golang.org/protobuf v1.28.1
-	jochum.dev/jo-micro/router v0.3.8
+	jochum.dev/jo-micro/buncomponent v0.0.1
+	jochum.dev/jo-micro/components v0.1.0
+	jochum.dev/jo-micro/logruscomponent v0.0.2
+	jochum.dev/jo-micro/router v0.4.0
 )
 
 require (
@@ -69,7 +72,7 @@ require (
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rogpeppe/go-internal v1.8.0 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
@@ -85,7 +88,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	golang.org/x/tools v0.1.12 // indirect
-	google.golang.org/genproto v0.0.0-20220921223823-23cae91e6737 // indirect
+	google.golang.org/genproto v0.0.0-20220923205249-dd2d53f1fffc // indirect
 	google.golang.org/grpc v1.49.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

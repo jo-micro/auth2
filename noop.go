@@ -6,13 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2"
+	"go-micro.dev/v4/errors"
 	"go-micro.dev/v4/server"
+	"jochum.dev/jo-micro/components"
 )
-
-func init() {
-	ClientAuthRegistry().Register(newNoopClientPlugin())
-	RouterAuthRegistry().Register(newNoopRouterPlugin())
-}
 
 func newNoopClientPlugin() ClientPlugin {
 	return new(noopClientPlugin)
@@ -24,11 +21,11 @@ func (p *noopClientPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopClientPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
-	return flags
+func (p *noopClientPlugin) Flags(r *components.Registry) []cli.Flag {
+	return []cli.Flag{}
 }
 
-func (p *noopClientPlugin) Init(opts ...InitOption) error {
+func (p *noopClientPlugin) Init(r *components.Registry, cli *cli.Context) error {
 	return nil
 }
 
@@ -36,8 +33,8 @@ func (p *noopClientPlugin) Stop() error {
 	return nil
 }
 
-func (p *noopClientPlugin) Health(ctx context.Context) (string, error) {
-	return "All fine", nil
+func (p *noopClientPlugin) Health(ctx context.Context) error {
+	return nil
 }
 
 func (p *noopClientPlugin) SetVerifier(v VerifierPlugin) {
@@ -51,8 +48,8 @@ func (p *noopClientPlugin) Inspect(ctx context.Context) (*User, error) {
 	return &User{Id: uuid.New().String(), Issuer: p.String()}, nil
 }
 
-func (p *noopClientPlugin) WrapperFunc(h server.HandlerFunc, ctx context.Context, req server.Request, rsp interface{}) error {
-	return h(ctx, req, rsp)
+func (p *noopClientPlugin) WrapHandlerFunc(ctx context.Context, req server.Request, rsp interface{}) error {
+	return errors.MethodNotAllowed("NO_AUTH_METHOD", "no auth method - noop plugin")
 }
 
 func newNoopRouterPlugin() RouterPlugin {
@@ -65,11 +62,11 @@ func (p *noopRouterPlugin) String() string {
 	return "noop"
 }
 
-func (p *noopRouterPlugin) MergeFlags(flags []cli.Flag) []cli.Flag {
-	return flags
+func (p *noopRouterPlugin) Flags(r *components.Registry) []cli.Flag {
+	return []cli.Flag{}
 }
 
-func (p *noopRouterPlugin) Init(opts ...InitOption) error {
+func (p *noopRouterPlugin) Init(r *components.Registry, cli *cli.Context) error {
 	return nil
 }
 
@@ -77,8 +74,8 @@ func (p *noopRouterPlugin) Stop() error {
 	return nil
 }
 
-func (p *noopRouterPlugin) Health(ctx context.Context) (string, error) {
-	return "All fine", nil
+func (p *noopRouterPlugin) Health(ctx context.Context) error {
+	return nil
 }
 
 func (p *noopRouterPlugin) Inspect(r *http.Request) (*User, error) {

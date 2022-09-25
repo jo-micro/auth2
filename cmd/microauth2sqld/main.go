@@ -20,12 +20,13 @@ import (
 	"jochum.dev/jo-micro/auth2"
 	"jochum.dev/jo-micro/auth2/cmd/microauth2sqld/config"
 	"jochum.dev/jo-micro/auth2/cmd/microauth2sqld/handler"
-	"jochum.dev/jo-micro/auth2/internal/ibun"
-	"jochum.dev/jo-micro/auth2/internal/ilogger"
 	"jochum.dev/jo-micro/auth2/internal/proto/authpb"
+	"jochum.dev/jo-micro/buncomponent"
+	"jochum.dev/jo-micro/components"
+	"jochum.dev/jo-micro/logruscomponent"
 	"jochum.dev/jo-micro/router"
 
-	_ "jochum.dev/jo-micro/auth2/plugins/client/jwt"
+	"jochum.dev/jo-micro/auth2/plugins/client/jwt"
 	"jochum.dev/jo-micro/auth2/plugins/verifier/endpointroles"
 )
 
@@ -92,12 +93,14 @@ func generateRSAPEMKeyPair(bits int) (string, string, error) {
 }
 
 func main() {
-	srv := micro.NewService()
+	service := micro.NewService()
+	cReg := components.New(service, "auth2", logruscomponent.New(), auth2.ClientAuthComponent(), buncomponent.New(), router.New())
 
-	auth2ClientReg := auth2.ClientAuthRegistry()
+	auth2ClientReg := auth2.ClientAuthMustReg(cReg)
+	auth2ClientReg.Register(jwt.New())
 	auth2ClientReg.ForcePlugin("jwt")
 
-	flags := ibun.AppendFlags(ilogger.AppendFlags(auth2ClientReg.MergeFlags([]cli.Flag{
+	flags := []cli.Flag{
 		// Generate
 		&cli.BoolFlag{
 			Name:  "auth2_generate_keys",
@@ -159,24 +162,17 @@ func main() {
 			Usage:   "Add and expect this JWT audience",
 			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
 		},
-	})))
+	}
 
 	authHandler := handler.NewHandler()
 
 	opts := []micro.Option{
 		micro.Name(config.Name),
 		micro.Version(config.Version),
-		micro.Flags(flags...),
-		micro.WrapHandler(auth2ClientReg.Wrapper()),
+		micro.Flags(components.FilterDuplicateFlags(cReg.AppendFlags(flags))...),
+		micro.WrapHandler(cReg.WrapHandler()),
 		micro.Action(func(c *cli.Context) error {
-			// Start the logger
-			if err := ilogger.Start(c); err != nil {
-				logger.Fatal(err)
-				return err
-			}
-
 			if c.Bool("auth2_generate_keys") {
-
 				var (
 					aPubKey  string
 					aPrivKey string
@@ -186,40 +182,46 @@ func main() {
 				)
 
 				// Just generate keys and print them to the commandline
-
 				switch c.String("auth2_generate_format") {
 				case "Ed25519":
 					aPubKey, aPrivKey, err = generateEd25519PEMKeyPair()
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 
 					rPubKey, rPrivKey, err = generateEd25519PEMKeyPair()
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 				case "RSA4096":
 					aPubKey, aPrivKey, err = generateRSAPEMKeyPair(4096)
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 
 					rPubKey, rPrivKey, err = generateRSAPEMKeyPair(4096)
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 				case "RSA2048":
 					aPubKey, aPrivKey, err = generateRSAPEMKeyPair(2048)
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 
 					rPubKey, rPrivKey, err = generateRSAPEMKeyPair(2048)
 					if err != nil {
-						ilogger.Logrus().Fatal(err)
+						logger.Fatal(err)
+						return err
 					}
 				default:
-					ilogger.Logrus().Fatalf("unknown key format: %s", c.String("auth2_generate_format"))
+					logger.Fatalf("unknown key format: %s", c.String("auth2_generate_format"))
+					return err
 				}
 
 				absPath, err := exec.LookPath(os.Args[0])
@@ -237,12 +239,16 @@ func main() {
 				os.Exit(0)
 			}
 
-			if err := auth2ClientReg.Init(auth2.CliContext(c), auth2.Service(srv), auth2.Logrus(ilogger.Logrus())); err != nil {
-				ilogger.Logrus().Fatal(err)
+			// Start the components
+			if err := cReg.Init(c); err != nil {
+				logger.Fatal(err)
+				return err
 			}
 
+			logger := logruscomponent.MustReg(cReg).Logger()
+
 			authVerifier := endpointroles.NewVerifier(
-				endpointroles.WithLogrus(ilogger.Logrus()),
+				endpointroles.WithLogrus(logger),
 			)
 			authVerifier.AddRules(
 				endpointroles.RouterRule,
@@ -281,25 +287,27 @@ func main() {
 			)
 			auth2ClientReg.Plugin().SetVerifier(authVerifier)
 
-			// Connect to the database
-			if err := ibun.Start(c); err != nil {
-				ilogger.Logrus().Fatal(err)
-			}
-
 			// Check if we got keys
 			if c.String("auth2_jwt_pub_key") == "" || c.String("auth2_jwt_priv_key") == "" || c.String("auth2_jwt_refresh_pub_key") == "" || c.String("auth2_jwt_refresh_priv_key") == "" {
-				ilogger.Logrus().Fatal(ErrorNoKeys)
+				logger.Fatal(ErrorNoKeys)
+				return ErrorNoKeys
 			}
 
 			// Check the other handler cli arguments
 			if c.Int64("auth2_jwt_access_expiry") < 1 {
-				ilogger.Logrus().Fatal(errors.New("MICRO_AUTH2_JWT_ACCESS_EXPIRY must be great than 0"))
+				err := errors.New("MICRO_AUTH2_JWT_ACCESS_EXPIRY must be great than 0")
+				logger.Fatal(err)
+				return err
 			}
 			if c.Int64("auth2_jwt_refresh_expiry") < 1 {
-				ilogger.Logrus().Fatal(errors.New("MICRO_AUTH2_JWT_REFRESH_EXPIRY must be great than 0"))
+				err := errors.New("MICRO_AUTH2_JWT_REFRESH_EXPIRY must be great than 0")
+				logger.Fatal(err)
+				return err
 			}
 			if c.StringSlice("auth2_jwt_audience") == nil {
-				ilogger.Logrus().Fatal(errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given"))
+				err := errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
+				logger.Fatal(err)
+				return err
 			}
 
 			if err := authHandler.Init(handler.InitConfig{
@@ -311,88 +319,81 @@ func main() {
 				RefreshTokenPubKey:  c.String("auth2_jwt_refresh_pub_key"),
 				RefreshTokenPrivKey: c.String("auth2_jwt_refresh_priv_key"),
 			}); err != nil {
-				ilogger.Logrus().Fatal(err)
+				logger.Fatal(err)
+				return err
 			}
-			authpb.RegisterAuthServiceHandler(srv.Server(), authHandler)
+			authpb.RegisterAuthServiceHandler(service.Server(), authHandler)
 
 			// Register with https://jochum.dev/jo-micro/router
-			r := router.NewHandler(
-				c.String("auth2_sqld_router_basepath"),
-				router.NewRoute(
-					router.Method(router.MethodGet),
-					router.Path("/"),
-					router.Endpoint(authpb.AuthService.List),
-					router.Params("limit", "offset"),
-					router.AuthRequired(),
-					router.RatelimitUser("1-S", "10-M"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodPost),
-					router.Path("/login"),
-					router.Endpoint(authpb.AuthService.Login),
-					router.RatelimitClientIP("1-S", "10-M", "30-H", "100-D"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodPost),
-					router.Path("/register"),
-					router.Endpoint(authpb.AuthService.Register),
-					router.RatelimitClientIP("1-M", "10-H", "50-D"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodPost),
-					router.Path("/refresh"),
-					router.Endpoint(authpb.AuthService.Refresh),
-					router.RatelimitClientIP("1-M", "10-H", "50-D"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodDelete),
-					router.Path("/:userId"),
-					router.Endpoint(authpb.AuthService.Delete),
-					router.Params("userId"),
-					router.AuthRequired(),
-					router.RatelimitUser("1-S", "10-M"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodGet),
-					router.Path("/:userId"),
-					router.Endpoint(authpb.AuthService.Detail),
-					router.Params("userId"),
-					router.AuthRequired(),
-					router.RatelimitUser("100-M"),
-				),
-				router.NewRoute(
-					router.Method(router.MethodPut),
-					router.Path("/:userId/roles"),
-					router.Endpoint(authpb.AuthService.UpdateRoles),
-					router.Params("userId"),
-					router.AuthRequired(),
-					router.RatelimitUser("1-M"),
-				),
-			)
-			r.RegisterWithServer(srv.Server())
+			// r := router.New()
+			// 	c.String("auth2_sqld_router_basepath"),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodGet),
+			// 		router.Path("/"),
+			// 		router.Endpoint(authpb.AuthService.List),
+			// 		router.Params("limit", "offset"),
+			// 		router.AuthRequired(),
+			// 		router.RatelimitUser("1-S", "10-M"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodPost),
+			// 		router.Path("/login"),
+			// 		router.Endpoint(authpb.AuthService.Login),
+			// 		router.RatelimitClientIP("1-S", "10-M", "30-H", "100-D"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodPost),
+			// 		router.Path("/register"),
+			// 		router.Endpoint(authpb.AuthService.Register),
+			// 		router.RatelimitClientIP("1-M", "10-H", "50-D"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodPost),
+			// 		router.Path("/refresh"),
+			// 		router.Endpoint(authpb.AuthService.Refresh),
+			// 		router.RatelimitClientIP("1-M", "10-H", "50-D"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodDelete),
+			// 		router.Path("/:userId"),
+			// 		router.Endpoint(authpb.AuthService.Delete),
+			// 		router.Params("userId"),
+			// 		router.AuthRequired(),
+			// 		router.RatelimitUser("1-S", "10-M"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodGet),
+			// 		router.Path("/:userId"),
+			// 		router.Endpoint(authpb.AuthService.Detail),
+			// 		router.Params("userId"),
+			// 		router.AuthRequired(),
+			// 		router.RatelimitUser("100-M"),
+			// 	),
+			// 	router.NewRoute(
+			// 		router.Method(router.MethodPut),
+			// 		router.Path("/:userId/roles"),
+			// 		router.Endpoint(authpb.AuthService.UpdateRoles),
+			// 		router.Params("userId"),
+			// 		router.AuthRequired(),
+			// 		router.RatelimitUser("1-M"),
+			// 	),
+			// )
+			// r.RegisterWithServer(service.Server())
 			return nil
 		}),
 	}
 
-	srv.Init(opts...)
+	service.Init(opts...)
 
 	// Run server
-	if err := srv.Run(); err != nil {
-		ilogger.Logrus().Fatal(err)
-	}
-
-	// Disconnect from the database
-	if err := ibun.Stop(); err != nil {
-		ilogger.Logrus().Fatal(err)
+	if err := service.Run(); err != nil {
+		logruscomponent.MustReg(cReg).Logger().Fatal(err)
+		return
 	}
 
 	// Stop the auth Plugin
-	if err := auth2ClientReg.Stop(); err != nil {
-		ilogger.Logrus().Fatal(err)
-	}
-
-	// Stop the logger
-	if err := ilogger.Stop(); err != nil {
+	if err := cReg.Stop(); err != nil {
 		logger.Fatal(err)
+		return
 	}
 }
