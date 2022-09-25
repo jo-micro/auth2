@@ -19,7 +19,7 @@ require (
 	jochum.dev/jo-micro/buncomponent v0.0.5
 	jochum.dev/jo-micro/components v0.3.0
 	jochum.dev/jo-micro/logruscomponent v0.0.4
-	jochum.dev/jo-micro/router v0.4.5
+	jochum.dev/jo-micro/router v0.4.7
 )
 
 require (

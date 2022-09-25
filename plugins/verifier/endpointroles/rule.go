@@ -1,14 +1,7 @@
 package endpointroles
 
 import (
-	"jochum.dev/jo-micro/auth2"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
-)
-
-// Add this on every Server that exposes RouterClientService
-var RouterRule = NewRule(
-	Endpoint("RouterClientService.Routes"),
-	RolesAllow([]string{auth2.ROLE_SERVICE}),
 )
 
 type Rule struct {

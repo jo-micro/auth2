@@ -128,7 +128,6 @@ func (h *Handler) Init(cReg *components.Registry, c InitConfig) error {
 		endpointroles.WithLogrus(logruscomponent.MustReg(h.cReg).Logger()),
 	)
 	authVerifier.AddRules(
-		endpointroles.RouterRule,
 		endpointroles.NewRule(
 			endpointroles.Endpoint(authpb.AuthService.Delete),
 			endpointroles.RolesAllow(auth2.RolesServiceAndAdmin),
