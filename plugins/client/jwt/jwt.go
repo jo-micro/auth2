@@ -172,7 +172,7 @@ func (p *jwtPlugin) WrapHandlerFunc(ctx context.Context, req server.Request, rsp
 	var defaultDenyOk bool
 	for _, v := range p.verifiers {
 		err, defaultDenyOk = v.Verify(ctx, u, req)
-		if !defaultDenyOk && err != nil {
+		if !defaultDenyOk {
 			return err
 		}
 	}
