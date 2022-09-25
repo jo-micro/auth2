@@ -14,7 +14,6 @@ import (
 	"go-micro.dev/v4/metadata"
 	"go-micro.dev/v4/server"
 	"jochum.dev/jo-micro/auth2"
-	"jochum.dev/jo-micro/auth2/plugins/verifier/endpointroles"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/auth2/shared/sutil"
 	"jochum.dev/jo-micro/components"
@@ -22,9 +21,7 @@ import (
 
 func New() auth2.ClientPlugin {
 	return &jwtPlugin{
-		verifier: endpointroles.NewVerifier(
-			endpointroles.NoDefaultDeny(),
-		),
+		verifiers: []auth2.VerifierPlugin{},
 	}
 }
 
@@ -32,7 +29,7 @@ type jwtPlugin struct {
 	audiences []string
 	pubKey    any
 	privKey   any
-	verifier  auth2.VerifierPlugin
+	verifiers []auth2.VerifierPlugin
 }
 
 func (p *jwtPlugin) String() string {
@@ -86,8 +83,8 @@ func (p *jwtPlugin) Health(ctx context.Context) error {
 	return nil
 }
 
-func (p *jwtPlugin) SetVerifier(v auth2.VerifierPlugin) {
-	p.verifier = v
+func (p *jwtPlugin) AddVerifier(v auth2.VerifierPlugin) {
+	p.verifiers = append(p.verifiers, v)
 }
 
 func (p *jwtPlugin) ServiceContext(ctx context.Context) (context.Context, error) {
@@ -172,9 +169,13 @@ func (p *jwtPlugin) WrapHandlerFunc(ctx context.Context, req server.Request, rsp
 	}
 	ctx = context.WithValue(ctx, auth2.ContextUserKey{}, u)
 
-	if err = p.verifier.Verify(ctx, u, req); err != nil {
-		return err
+	var defaultDenyOk bool
+	for _, v := range p.verifiers {
+		err, defaultDenyOk = v.Verify(ctx, u, req)
+		if !defaultDenyOk && err != nil {
+			return err
+		}
 	}
 
-	return nil
+	return err
 }

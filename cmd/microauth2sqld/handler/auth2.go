@@ -17,8 +17,10 @@ import (
 	"jochum.dev/jo-micro/auth2/cmd/microauth2sqld/db"
 	"jochum.dev/jo-micro/auth2/internal/argon2"
 	"jochum.dev/jo-micro/auth2/internal/proto/authpb"
+	"jochum.dev/jo-micro/auth2/plugins/verifier/endpointroles"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/components"
+	"jochum.dev/jo-micro/logruscomponent"
 	"jochum.dev/jo-micro/router"
 )
 
@@ -121,6 +123,46 @@ func (h *Handler) Init(cReg *components.Registry, c InitConfig) error {
 			router.RatelimitUser("1-M"),
 		),
 	)
+
+	authVerifier := endpointroles.NewVerifier(
+		endpointroles.WithLogrus(logruscomponent.MustReg(h.cReg).Logger()),
+	)
+	authVerifier.AddRules(
+		endpointroles.RouterRule,
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Delete),
+			endpointroles.RolesAllow(auth2.RolesServiceAndAdmin),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Detail),
+			endpointroles.RolesAllow(auth2.RolesServiceAndUsersAndAdmin),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Inspect),
+			endpointroles.RolesAllow(auth2.RolesServiceAndUsersAndAdmin),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.List),
+			endpointroles.RolesAllow(auth2.RolesServiceAndAdmin),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Login),
+			endpointroles.RolesAllow(auth2.RolesAllAndAnon),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Refresh),
+			endpointroles.RolesAllow(auth2.RolesAllAndAnon),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.Register),
+			endpointroles.RolesAllow(auth2.RolesAllAndAnon),
+		),
+		endpointroles.NewRule(
+			endpointroles.Endpoint(authpb.AuthService.UpdateRoles),
+			endpointroles.RolesAllow(auth2.RolesAdmin),
+		),
+	)
+	auth2.ClientAuthMustReg(h.cReg).Plugin().AddVerifier(authVerifier)
 
 	return nil
 }

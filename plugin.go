@@ -28,7 +28,10 @@ type registryFuncs interface {
 
 type VerifierPlugin interface {
 	// Verify verifies that the user is allowed to access the request, it MUST handle AnonUser
-	Verify(ctx context.Context, u *User, req server.Request) error
+	// @return
+	// 		error 	nil if its allowed, else an error
+	//		bool	if the error given is a default error
+	Verify(ctx context.Context, u *User, req server.Request) (error, bool)
 }
 
 // ClientPlugin is for services that act as client's behind GinRouter
@@ -36,7 +39,7 @@ type ClientPlugin interface {
 	registryFuncs
 
 	// Set the Verifier for this Client
-	SetVerifier(v VerifierPlugin)
+	AddVerifier(v VerifierPlugin)
 
 	// ServiceContext adds the ServiceUser to the context (when using JWT's it will overwrite the Authorization Header)
 	ServiceContext(ctx context.Context) (context.Context, error)

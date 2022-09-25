@@ -41,29 +41,29 @@ func (v *EndpointRolesVerifier) logrus() *logrus.Logger {
 	return v.options.Logrus
 }
 
-func (v *EndpointRolesVerifier) Verify(ctx context.Context, u *auth2.User, req server.Request) error {
+func (v *EndpointRolesVerifier) Verify(ctx context.Context, u *auth2.User, req server.Request) (error, bool) {
 	if ep, ok := v.rules[req.Endpoint()]; ok {
 		if auth2.IntersectsRoles(u, ep.RolesDeny...) {
 			v.logrus().WithField("endpoint", req.Endpoint()).WithField("rolesDeny", ep.RolesDeny).WithField("userRoles", u.Roles).Debug("Unauthorized")
-			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|Denied by rule", "Unauthorized")
+			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|Denied by rule", "Unauthorized"), false
 		}
 		if auth2.IntersectsRoles(u, ep.RolesAllow...) {
 			v.logrus().WithField("endpoint", req.Endpoint()).WithField("rolesAllow", ep.RolesAllow).WithField("userRoles", u.Roles).Trace("Authorized")
 			// Allowed by role
-			return nil
+			return nil, false
 		}
 
 		if v.options.DefaultDeny {
 			v.logrus().WithField("endpoint", req.Endpoint()).WithField("user_roles", u.Roles).WithField("roles_allow", ep.RolesAllow).Debug("DefaultDeny: No matching role")
-			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No matching role", "Unauthorized")
+			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No matching role", "Unauthorized"), true
 		}
 	}
 
 	if !v.options.DefaultDeny {
 		v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Trace("DefaultAllow: No rule")
-		return nil
+		return nil, true
 	}
 
 	v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Debug("DefaultDeny: no rule")
-	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule", "Unauthorized")
+	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule", "Unauthorized"), false
 }

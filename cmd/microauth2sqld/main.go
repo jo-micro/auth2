@@ -27,7 +27,6 @@ import (
 	"jochum.dev/jo-micro/router"
 
 	"jochum.dev/jo-micro/auth2/plugins/client/jwt"
-	"jochum.dev/jo-micro/auth2/plugins/verifier/endpointroles"
 )
 
 var (
@@ -246,46 +245,6 @@ func main() {
 			}
 
 			logger := logruscomponent.MustReg(cReg).Logger()
-
-			authVerifier := endpointroles.NewVerifier(
-				endpointroles.WithLogrus(logger),
-			)
-			authVerifier.AddRules(
-				endpointroles.RouterRule,
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Delete),
-					endpointroles.RolesAllow(auth2.RolesServiceAndAdmin),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Detail),
-					endpointroles.RolesAllow(auth2.RolesServiceAndUsersAndAdmin),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Inspect),
-					endpointroles.RolesAllow(auth2.RolesServiceAndUsersAndAdmin),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.List),
-					endpointroles.RolesAllow(auth2.RolesServiceAndAdmin),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Login),
-					endpointroles.RolesAllow(auth2.RolesAllAndAnon),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Refresh),
-					endpointroles.RolesAllow(auth2.RolesAllAndAnon),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.Register),
-					endpointroles.RolesAllow(auth2.RolesAllAndAnon),
-				),
-				endpointroles.NewRule(
-					endpointroles.Endpoint(authpb.AuthService.UpdateRoles),
-					endpointroles.RolesAllow(auth2.RolesAdmin),
-				),
-			)
-			auth2ClientReg.Plugin().SetVerifier(authVerifier)
 
 			// Check if we got keys
 			if c.String("auth2_jwt_pub_key") == "" || c.String("auth2_jwt_priv_key") == "" || c.String("auth2_jwt_refresh_pub_key") == "" || c.String("auth2_jwt_refresh_priv_key") == "" {

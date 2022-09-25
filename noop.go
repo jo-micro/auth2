@@ -37,7 +37,7 @@ func (p *noopClientPlugin) Health(ctx context.Context) error {
 	return nil
 }
 
-func (p *noopClientPlugin) SetVerifier(v VerifierPlugin) {
+func (p *noopClientPlugin) AddVerifier(v VerifierPlugin) {
 }
 
 func (p *noopClientPlugin) ServiceContext(ctx context.Context) (context.Context, error) {
