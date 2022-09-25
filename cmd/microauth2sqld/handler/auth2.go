@@ -18,6 +18,7 @@ import (
 	"jochum.dev/jo-micro/auth2/internal/argon2"
 	"jochum.dev/jo-micro/auth2/internal/proto/authpb"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
+	"jochum.dev/jo-micro/components"
 )
 
 type InitConfig struct {
@@ -32,6 +33,7 @@ type InitConfig struct {
 }
 
 type Handler struct {
+	cReg                *components.Registry
 	audiences           []string
 	refreshTokenExpiry  int64
 	accessTokenExpiry   int64
@@ -45,7 +47,8 @@ func NewHandler() *Handler {
 	return &Handler{}
 }
 
-func (h *Handler) Init(c InitConfig) error {
+func (h *Handler) Init(cReg *components.Registry, c InitConfig) error {
+	h.cReg = cReg
 	h.audiences = c.Audiences
 	h.accessTokenExpiry = c.AccessTokenExpiry
 	h.refreshTokenExpiry = c.RefreshTokenExpiry
@@ -71,8 +74,8 @@ func (h *Handler) Stop() error {
 	return nil
 }
 
-func (s *Handler) List(ctx context.Context, in *authpb.ListRequest, out *authpb.UserListReply) error {
-	results, err := db.UserList(ctx, in.Limit, in.Offset)
+func (h *Handler) List(ctx context.Context, in *authpb.ListRequest, out *authpb.UserListReply) error {
+	results, err := db.UserList(h.cReg, ctx, in.Limit, in.Offset)
 	if err != nil {
 		return err
 	}
@@ -89,8 +92,8 @@ func (s *Handler) List(ctx context.Context, in *authpb.ListRequest, out *authpb.
 	return nil
 }
 
-func (s *Handler) Detail(ctx context.Context, in *authpb.UserIDRequest, out *authpb.User) error {
-	result, err := db.UserDetail(ctx, in.UserId)
+func (h *Handler) Detail(ctx context.Context, in *authpb.UserIDRequest, out *authpb.User) error {
+	result, err := db.UserDetail(h.cReg, ctx, in.UserId)
 	if err != nil {
 		return err
 	}
@@ -103,8 +106,8 @@ func (s *Handler) Detail(ctx context.Context, in *authpb.UserIDRequest, out *aut
 	return nil
 }
 
-func (s *Handler) Delete(ctx context.Context, in *authpb.UserIDRequest, out *emptypb.Empty) error {
-	err := db.UserDelete(ctx, in.UserId)
+func (h *Handler) Delete(ctx context.Context, in *authpb.UserIDRequest, out *emptypb.Empty) error {
+	err := db.UserDelete(h.cReg, ctx, in.UserId)
 	if err != nil {
 		return err
 	}
@@ -112,8 +115,8 @@ func (s *Handler) Delete(ctx context.Context, in *authpb.UserIDRequest, out *emp
 	return nil
 }
 
-func (s *Handler) UpdateRoles(ctx context.Context, in *authpb.UpdateRolesRequest, out *authpb.User) error {
-	result, err := db.UserUpdateRoles(ctx, in.UserId, in.Roles)
+func (h *Handler) UpdateRoles(ctx context.Context, in *authpb.UpdateRolesRequest, out *authpb.User) error {
+	result, err := db.UserUpdateRoles(h.cReg, ctx, in.UserId, in.Roles)
 	if err != nil {
 		return err
 	}
@@ -126,7 +129,7 @@ func (s *Handler) UpdateRoles(ctx context.Context, in *authpb.UpdateRolesRequest
 	return nil
 }
 
-func (s *Handler) Register(ctx context.Context, in *authpb.RegisterRequest, out *authpb.User) error {
+func (h *Handler) Register(ctx context.Context, in *authpb.RegisterRequest, out *authpb.User) error {
 	if in.Username == auth2.ROLE_SERVICE {
 		return errors.New(config.Name, "User already exists", http.StatusConflict)
 	}
@@ -136,7 +139,7 @@ func (s *Handler) Register(ctx context.Context, in *authpb.RegisterRequest, out 
 		return err
 	}
 
-	result, err := db.UserCreate(ctx, in.Username, hash, in.Email, []string{auth2.ROLE_USER})
+	result, err := db.UserCreate(h.cReg, ctx, in.Username, hash, in.Email, []string{auth2.ROLE_USER})
 	if err != nil {
 		return errors.New(config.Name, "User already exists", http.StatusConflict)
 	}
@@ -149,14 +152,14 @@ func (s *Handler) Register(ctx context.Context, in *authpb.RegisterRequest, out 
 	return nil
 }
 
-func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Token) error {
+func (h *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Token) error {
 	// Create the Claims
 	refreshClaims := sjwt.JWTClaims{
 		RegisteredClaims: &jwt.RegisteredClaims{
 			Issuer:    config.Name,
 			Subject:   user.Username,
-			Audience:  s.audiences,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(s.accessTokenExpiry) * time.Second)),
+			Audience:  h.audiences,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(h.accessTokenExpiry) * time.Second)),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ID:        user.ID.String(),
@@ -171,13 +174,13 @@ func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Toke
 		refreshToken *jwt.Token
 	)
 
-	switch s.refreshTokenPrivKey.(type) {
+	switch h.refreshTokenPrivKey.(type) {
 	case *rsa.PrivateKey:
 		refreshToken = jwt.NewWithClaims(jwt.SigningMethodRS512, refreshClaims)
 	case ed25519.PrivateKey:
 		refreshToken = jwt.NewWithClaims(jwt.SigningMethodEdDSA, refreshClaims)
 	}
-	refreshSignedToken, err := refreshToken.SignedString(s.refreshTokenPrivKey)
+	refreshSignedToken, err := refreshToken.SignedString(h.refreshTokenPrivKey)
 	if err != nil {
 		return err
 	}
@@ -187,8 +190,8 @@ func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Toke
 		RegisteredClaims: &jwt.RegisteredClaims{
 			Issuer:    config.Name,
 			Subject:   user.Username,
-			Audience:  s.audiences,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(s.accessTokenExpiry) * time.Second)),
+			Audience:  h.audiences,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(h.accessTokenExpiry) * time.Second)),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ID:        user.ID.String(),
@@ -199,13 +202,13 @@ func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Toke
 		return err
 	}
 
-	switch s.accessTokenPrivKey.(type) {
+	switch h.accessTokenPrivKey.(type) {
 	case *rsa.PrivateKey:
 		accessToken = jwt.NewWithClaims(jwt.SigningMethodRS512, accessClaims)
 	case ed25519.PrivateKey:
 		accessToken = jwt.NewWithClaims(jwt.SigningMethodEdDSA, accessClaims)
 	}
-	accessSignedToken, err := accessToken.SignedString(s.accessTokenPrivKey)
+	accessSignedToken, err := accessToken.SignedString(h.accessTokenPrivKey)
 	if err != nil {
 		return err
 	}
@@ -219,8 +222,8 @@ func (s *Handler) genTokens(ctx context.Context, user *db.User, out *authpb.Toke
 	return nil
 }
 
-func (s *Handler) Login(ctx context.Context, in *authpb.LoginRequest, out *authpb.Token) error {
-	user, err := db.UserFindByUsername(ctx, in.Username)
+func (h *Handler) Login(ctx context.Context, in *authpb.LoginRequest, out *authpb.Token) error {
+	user, err := db.UserFindByUsername(h.cReg, ctx, in.Username)
 	if err != nil {
 		log.Error(err)
 		return errors.New(config.Name, "Wrong username or password", http.StatusUnauthorized)
@@ -234,13 +237,13 @@ func (s *Handler) Login(ctx context.Context, in *authpb.LoginRequest, out *authp
 		return errors.New(config.Name, "Wrong username or password", http.StatusUnauthorized)
 	}
 
-	return s.genTokens(ctx, user, out)
+	return h.genTokens(ctx, user, out)
 }
 
-func (s *Handler) Refresh(ctx context.Context, in *authpb.RefreshTokenRequest, out *authpb.Token) error {
+func (h *Handler) Refresh(ctx context.Context, in *authpb.RefreshTokenRequest, out *authpb.Token) error {
 	claims := sjwt.JWTClaims{}
 	_, err := jwt.ParseWithClaims(in.RefreshToken, &claims, func(token *jwt.Token) (interface{}, error) {
-		return s.refreshTokenPubKey, nil
+		return h.refreshTokenPubKey, nil
 	})
 	if err != nil {
 		return errors.New(config.Name, fmt.Sprintf("checking the RefreshToken: %s", err), http.StatusBadRequest)
@@ -251,12 +254,12 @@ func (s *Handler) Refresh(ctx context.Context, in *authpb.RefreshTokenRequest, o
 		return fmt.Errorf("claims invalid: %s", err)
 	}
 
-	user, err := db.UserFindById(ctx, claims.ID)
+	user, err := db.UserFindById(h.cReg, ctx, claims.ID)
 	if err != nil {
 		return errors.New(config.Name, fmt.Sprintf("error fetching the user: %s", err), http.StatusUnauthorized)
 	}
 
-	return s.genTokens(ctx, user, out)
+	return h.genTokens(ctx, user, out)
 }
 
 func (s *Handler) Inspect(ctx context.Context, in *emptypb.Empty, out *authpb.JWTClaims) error {

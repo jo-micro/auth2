@@ -310,7 +310,7 @@ func main() {
 				return err
 			}
 
-			if err := authHandler.Init(handler.InitConfig{
+			if err := authHandler.Init(cReg, handler.InitConfig{
 				Audiences:           c.StringSlice("auth2_jwt_audience"),
 				RefreshTokenExpiry:  c.Int64("auth2_jwt_refresh_expiry"),
 				AccessTokenExpiry:   c.Int64("auth2_jwt_access_expiry"),
@@ -324,61 +324,6 @@ func main() {
 			}
 			authpb.RegisterAuthServiceHandler(service.Server(), authHandler)
 
-			// Register with https://jochum.dev/jo-micro/router
-			// r := router.New()
-			// 	c.String("auth2_sqld_router_basepath"),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodGet),
-			// 		router.Path("/"),
-			// 		router.Endpoint(authpb.AuthService.List),
-			// 		router.Params("limit", "offset"),
-			// 		router.AuthRequired(),
-			// 		router.RatelimitUser("1-S", "10-M"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodPost),
-			// 		router.Path("/login"),
-			// 		router.Endpoint(authpb.AuthService.Login),
-			// 		router.RatelimitClientIP("1-S", "10-M", "30-H", "100-D"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodPost),
-			// 		router.Path("/register"),
-			// 		router.Endpoint(authpb.AuthService.Register),
-			// 		router.RatelimitClientIP("1-M", "10-H", "50-D"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodPost),
-			// 		router.Path("/refresh"),
-			// 		router.Endpoint(authpb.AuthService.Refresh),
-			// 		router.RatelimitClientIP("1-M", "10-H", "50-D"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodDelete),
-			// 		router.Path("/:userId"),
-			// 		router.Endpoint(authpb.AuthService.Delete),
-			// 		router.Params("userId"),
-			// 		router.AuthRequired(),
-			// 		router.RatelimitUser("1-S", "10-M"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodGet),
-			// 		router.Path("/:userId"),
-			// 		router.Endpoint(authpb.AuthService.Detail),
-			// 		router.Params("userId"),
-			// 		router.AuthRequired(),
-			// 		router.RatelimitUser("100-M"),
-			// 	),
-			// 	router.NewRoute(
-			// 		router.Method(router.MethodPut),
-			// 		router.Path("/:userId/roles"),
-			// 		router.Endpoint(authpb.AuthService.UpdateRoles),
-			// 		router.Params("userId"),
-			// 		router.AuthRequired(),
-			// 		router.RatelimitUser("1-M"),
-			// 	),
-			// )
-			// r.RegisterWithServer(service.Server())
 			return nil
 		}),
 	}

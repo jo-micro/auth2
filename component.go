@@ -21,10 +21,6 @@ func ClientAuthComponent() *AuthRegistry[ClientPlugin] {
 	return c
 }
 
-func ClientAuthMust(ctx context.Context) *AuthRegistry[ClientPlugin] {
-	return components.Must(ctx).Must(ClientAuthName).(*AuthRegistry[ClientPlugin])
-}
-
 func ClientAuthMustReg(cReg *components.Registry) *AuthRegistry[ClientPlugin] {
 	return cReg.Must(ClientAuthName).(*AuthRegistry[ClientPlugin])
 }
@@ -34,10 +30,6 @@ func RouterAuthComponent() *AuthRegistry[RouterPlugin] {
 	c.Register(newNoopRouterPlugin())
 
 	return c
-}
-
-func RouterAuthMust(ctx context.Context) *AuthRegistry[RouterPlugin] {
-	return components.Must(ctx).Must(RouterAuthName).(*AuthRegistry[RouterPlugin])
 }
 
 func RouterAuthMustReg(cReg *components.Registry) *AuthRegistry[RouterPlugin] {
