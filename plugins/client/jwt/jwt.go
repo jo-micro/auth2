@@ -44,15 +44,15 @@ func (p *jwtPlugin) Flags(r *components.Registry) []cli.Flag {
 		&cli.StringFlag{
 			Name:    "auth2_jwt_pub_key",
 			Usage:   "Public key PEM base64 encoded for access keys",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+			EnvVars: []string{"AUTH2_JWT_PUB_KEY"},
 		}, &cli.StringFlag{
 			Name:    "auth2_jwt_priv_key",
 			Usage:   "Private key PEM base64 encoded for access keys",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PRIV_KEY"},
+			EnvVars: []string{"AUTH2_JWT_PRIV_KEY"},
 		}, &cli.StringSliceFlag{
 			Name:    "auth2_jwt_audience",
 			Usage:   "Add and expect this JWT audience",
-			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
+			EnvVars: []string{"AUTH2_JWT_AUDIENCES"},
 		},
 	}
 }
@@ -63,7 +63,7 @@ func (p *jwtPlugin) Init(r *components.Registry, cli *cli.Context) error {
 	}
 
 	if cli.StringSlice("auth2_jwt_audience") == nil {
-		return errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
+		return errors.New("AUTH2_JWT_AUDIENCES must be given")
 	}
 
 	pub, priv, err := sjwt.DecodeKeyPair(cli.String("auth2_jwt_pub_key"), cli.String("auth2_jwt_priv_key"))

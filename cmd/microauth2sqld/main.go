@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	ErrorNoKeys = errors.New("config MICRO_AUTH2_JWT_*_KEY or MICRO_AUTH2_JWT_REFRESH_*_KEY not given")
+	ErrorNoKeys = errors.New("config AUTH2_JWT_*_KEY or AUTH2_JWT_REFRESH_*_KEY not given")
 )
 
 func generateEd25519PEMKeyPair() (string, string, error) {
@@ -117,7 +117,7 @@ func main() {
 		&cli.StringFlag{
 			Name:    "auth2_sqld_router_basepath",
 			Usage:   "Router basepath",
-			EnvVars: []string{"MICRO_AUTH2_SQLD_ROUTER_BASEPATH"},
+			EnvVars: []string{"AUTH2_SQLD_ROUTER_BASEPATH"},
 			Value:   "auth",
 		},
 
@@ -126,41 +126,41 @@ func main() {
 		&cli.StringFlag{
 			Name:    "auth2_jwt_pub_key",
 			Usage:   "Public access key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+			EnvVars: []string{"AUTH2_JWT_PUB_KEY"},
 		},
 		&cli.StringFlag{
 			Name:    "auth2_jwt_priv_key",
 			Usage:   "Private access key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PRIV_KEY"},
+			EnvVars: []string{"AUTH2_JWT_PRIV_KEY"},
 		},
 		&cli.StringFlag{
 			Name:    "auth2_jwt_refresh_pub_key",
 			Usage:   "Public refresh key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_REFRESH_PUB_KEY"},
+			EnvVars: []string{"AUTH2_JWT_REFRESH_PUB_KEY"},
 		},
 		&cli.StringFlag{
 			Name:    "auth2_jwt_refresh_priv_key",
 			Usage:   "Private refresh key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_REFRESH_PRIV_KEY"},
+			EnvVars: []string{"AUTH2_JWT_REFRESH_PRIV_KEY"},
 		},
 
 		// Token
 		&cli.Int64Flag{
 			Name:    "auth2_jwt_refresh_expiry",
 			Usage:   "Expire the refreshtoken after x seconds, default is one day",
-			EnvVars: []string{"MICRO_AUTH2_JWT_REFRESH_EXPIRY"},
+			EnvVars: []string{"AUTH2_JWT_REFRESH_EXPIRY"},
 			Value:   86400,
 		},
 		&cli.Int64Flag{
 			Name:    "auth2_jwt_access_expiry",
 			Usage:   "Expire the accesstoken after x seconds, default is 15 minutes",
-			EnvVars: []string{"MICRO_AUTH2_JWT_ACCESS_EXPIRY"},
+			EnvVars: []string{"AUTH2_JWT_ACCESS_EXPIRY"},
 			Value:   900,
 		},
 		&cli.StringSliceFlag{
 			Name:    "auth2_jwt_audience",
 			Usage:   "Add and expect this JWT audience",
-			EnvVars: []string{"MICRO_AUTH2_JWT_AUDIENCES"},
+			EnvVars: []string{"AUTH2_JWT_AUDIENCES"},
 		},
 	}
 
@@ -231,10 +231,10 @@ func main() {
 				}
 
 				fmt.Printf("# go.micro.auth %s JWT keys in PEM - generated using '%s %s'\n", c.String("auth2_generate_format"), absPath, strings.Join(os.Args[1:len(os.Args)], " "))
-				fmt.Printf("MICRO_AUTH2_JWT_PRIV_KEY=\"%s\"\n", aPrivKey)
-				fmt.Printf("MICRO_AUTH2_JWT_PUB_KEY=\"%s\"\n", aPubKey)
-				fmt.Printf("MICRO_AUTH2_JWT_REFRESH_PRIV_KEY=\"%s\"\n", rPrivKey)
-				fmt.Printf("MICRO_AUTH2_JWT_REFRESH_PUB_KEY=\"%s\"\n", rPubKey)
+				fmt.Printf("AUTH2_JWT_PRIV_KEY=\"%s\"\n", aPrivKey)
+				fmt.Printf("AUTH2_JWT_PUB_KEY=\"%s\"\n", aPubKey)
+				fmt.Printf("AUTH2_JWT_REFRESH_PRIV_KEY=\"%s\"\n", rPrivKey)
+				fmt.Printf("AUTH2_JWT_REFRESH_PUB_KEY=\"%s\"\n", rPubKey)
 
 				os.Exit(0)
 			}
@@ -295,17 +295,17 @@ func main() {
 
 			// Check the other handler cli arguments
 			if c.Int64("auth2_jwt_access_expiry") < 1 {
-				err := errors.New("MICRO_AUTH2_JWT_ACCESS_EXPIRY must be great than 0")
+				err := errors.New("AUTH2_JWT_ACCESS_EXPIRY must be great than 0")
 				logger.Fatal(err)
 				return err
 			}
 			if c.Int64("auth2_jwt_refresh_expiry") < 1 {
-				err := errors.New("MICRO_AUTH2_JWT_REFRESH_EXPIRY must be great than 0")
+				err := errors.New("AUTH2_JWT_REFRESH_EXPIRY must be great than 0")
 				logger.Fatal(err)
 				return err
 			}
 			if c.StringSlice("auth2_jwt_audience") == nil {
-				err := errors.New("MICRO_AUTH2_JWT_AUDIENCES must be given")
+				err := errors.New("AUTH2_JWT_AUDIENCES must be given")
 				logger.Fatal(err)
 				return err
 			}

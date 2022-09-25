@@ -27,7 +27,7 @@ tasks:
   volume:
     run: "once"
     cmds:
-      - podman volume inspect jo-micro_auth2_go 1>/dev/null 2>&1 || podman volume create jo-micro_auth2_go
+      - podman volume inspect jo-AUTH2_go 1>/dev/null 2>&1 || podman volume create jo-AUTH2_go
 
   builder:
     desc: Run something in the builder container for example "task builder -- go get -u ./..."
@@ -39,7 +39,7 @@ tasks:
           {{.DOCKER_ORG_JO_MICRO}}/builder:latest {{.CLI_ARGS}}
     vars:
       VOLUME_PATH:
-        sh: podman volume inspect jo-micro_auth2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+        sh: podman volume inspect jo-AUTH2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
       BUILD_MOUNT_FOLDER_INT:
         sh: realpath {{.BUILD_MOUNT_FOLDER}}
     preconditions:
@@ -77,7 +77,7 @@ tasks:
           .
     vars:
       VOLUME_PATH:
-        sh: podman volume inspect jo-micro_auth2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
+        sh: podman volume inspect jo-AUTH2_go --format "{{"{{"}}.Mountpoint{{"}}"}}"
       BUILD_MOUNT_FOLDER_INT:
         sh: realpath {{.BUILD_MOUNT_FOLDER}}
 
@@ -115,7 +115,7 @@ tasks:
   rm:
     desc: Remove all persistent data
     cmds:
-      - podman volume rm jo-micro_auth2_go || exit 0
+      - podman volume rm jo-AUTH2_go || exit 0
       - podman image rm {{.DOCKER_ORG_JO_MICRO}}/auth2-sql:latest || exit 0
       - rm -rf $PWD/.task
 

@@ -38,7 +38,7 @@ func (p *jwtPlugin) Flags(r *components.Registry) []cli.Flag {
 		&cli.StringFlag{
 			Name:    "auth2_jwt_pub_key",
 			Usage:   "Public key PEM base64 encoded",
-			EnvVars: []string{"MICRO_AUTH2_JWT_PUB_KEY"},
+			EnvVars: []string{"AUTH2_JWT_PUB_KEY"},
 		},
 	}
 }

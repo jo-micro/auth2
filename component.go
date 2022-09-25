@@ -90,7 +90,7 @@ func (r *AuthRegistry[T]) Flags(c *components.Registry) []cli.Flag {
 			&cli.StringFlag{
 				Name:    fmt.Sprintf("auth2_%s", r.kind),
 				Usage:   fmt.Sprintf("Auth %s Plugin to use", r.kind),
-				EnvVars: []string{fmt.Sprintf("MICRO_AUTH2_%s", strings.ToUpper(r.kind))},
+				EnvVars: []string{fmt.Sprintf("AUTH2_%s", strings.ToUpper(r.kind))},
 				Value:   "noop",
 			},
 		}
@@ -116,7 +116,7 @@ func (r *AuthRegistry[T]) Init(c *components.Registry, cli *cli.Context) error {
 		plugin := cli.String(fmt.Sprintf("auth2_%s", r.kind))
 		m, ok := r.plugins[plugin]
 		if !ok {
-			return fmt.Errorf("unknown MICRO_AUTH2_%s plugin '%s'", strings.ToUpper(r.kind), plugin)
+			return fmt.Errorf("unknown AUTH2_%s plugin '%s'", strings.ToUpper(r.kind), plugin)
 		}
 
 		r.plugin = m
