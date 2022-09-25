@@ -19,6 +19,7 @@ import (
 	"jochum.dev/jo-micro/auth2/internal/proto/authpb"
 	"jochum.dev/jo-micro/auth2/shared/sjwt"
 	"jochum.dev/jo-micro/components"
+	"jochum.dev/jo-micro/router"
 )
 
 type InitConfig struct {
@@ -66,6 +67,60 @@ func (h *Handler) Init(cReg *components.Registry, c InitConfig) error {
 	}
 	h.refreshTokenPubKey = pub
 	h.refreshTokenPrivKey = priv
+
+	r := router.MustReg(h.cReg)
+	r.Add(
+		router.NewRoute(
+			router.Method(router.MethodGet),
+			router.Path("/"),
+			router.Endpoint(authpb.AuthService.List),
+			router.Params("limit", "offset"),
+			router.AuthRequired(),
+			router.RatelimitUser("1-S", "10-M"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodPost),
+			router.Path("/login"),
+			router.Endpoint(authpb.AuthService.Login),
+			router.RatelimitClientIP("1-S", "10-M", "30-H", "100-D"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodPost),
+			router.Path("/register"),
+			router.Endpoint(authpb.AuthService.Register),
+			router.RatelimitClientIP("1-M", "10-H", "50-D"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodPost),
+			router.Path("/refresh"),
+			router.Endpoint(authpb.AuthService.Refresh),
+			router.RatelimitClientIP("1-M", "10-H", "50-D"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodDelete),
+			router.Path("/:userId"),
+			router.Endpoint(authpb.AuthService.Delete),
+			router.Params("userId"),
+			router.AuthRequired(),
+			router.RatelimitUser("1-S", "10-M"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodGet),
+			router.Path("/:userId"),
+			router.Endpoint(authpb.AuthService.Detail),
+			router.Params("userId"),
+			router.AuthRequired(),
+			router.RatelimitUser("100-M"),
+		),
+		router.NewRoute(
+			router.Method(router.MethodPut),
+			router.Path("/:userId/roles"),
+			router.Endpoint(authpb.AuthService.UpdateRoles),
+			router.Params("userId"),
+			router.AuthRequired(),
+			router.RatelimitUser("1-M"),
+		),
+	)
 
 	return nil
 }

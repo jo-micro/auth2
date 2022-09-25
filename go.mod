@@ -5,24 +5,18 @@ go 1.19
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/go-micro/plugins/v4/broker/nats v1.1.1-0.20220908125827-e0369dde429b
-	github.com/go-micro/plugins/v4/logger/logrus v1.1.0
 	github.com/go-micro/plugins/v4/registry/nats v1.1.1-0.20220908125827-e0369dde429b
 	github.com/go-micro/plugins/v4/transport/grpc v1.1.0
 	github.com/go-micro/plugins/v4/transport/nats v1.1.1-0.20220908125827-e0369dde429b
 	github.com/golang-jwt/jwt/v4 v4.4.2
-	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
-	github.com/jackc/pgx-logrus v0.0.0-20220919124836-b099d8ce75da
-	github.com/jackc/pgx/v5 v5.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/uptrace/bun v1.1.8
-	github.com/uptrace/bun/dialect/pgdialect v1.1.8
-	github.com/uptrace/bun/extra/bundebug v1.1.8
 	github.com/urfave/cli/v2 v2.16.3
 	go-micro.dev/v4 v4.8.1
 	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
 	google.golang.org/protobuf v1.28.1
-	jochum.dev/jo-micro/buncomponent v0.0.3
+	jochum.dev/jo-micro/buncomponent v0.0.5
 	jochum.dev/jo-micro/components v0.3.0
 	jochum.dev/jo-micro/logruscomponent v0.0.4
 	jochum.dev/jo-micro/router v0.4.2
@@ -44,9 +38,11 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/go-git/go-git/v5 v5.4.2 // indirect
+	github.com/go-micro/plugins/v4/logger/logrus v1.1.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
+	github.com/golang-migrate/migrate/v4 v4.15.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -54,6 +50,8 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
+	github.com/jackc/pgx-logrus v0.0.0-20220919124836-b099d8ce75da // indirect
+	github.com/jackc/pgx/v5 v5.0.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
@@ -72,10 +70,11 @@ require (
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
+	github.com/uptrace/bun/dialect/pgdialect v1.1.8 // indirect
+	github.com/uptrace/bun/extra/bundebug v1.1.8 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.2 // indirect
