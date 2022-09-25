@@ -170,7 +170,7 @@ func main() {
 		micro.Name(config.Name),
 		micro.Version(config.Version),
 		micro.Flags(components.FilterDuplicateFlags(cReg.AppendFlags(flags))...),
-		micro.WrapHandler(cReg.WrapHandler()),
+		micro.WrapHandler(auth2ClientReg.WrapHandler()),
 		micro.Action(func(c *cli.Context) error {
 			if c.Bool("auth2_generate_keys") {
 				var (

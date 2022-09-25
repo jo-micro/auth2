@@ -147,12 +147,20 @@ func (r *AuthRegistry[T]) Health(ctx context.Context) error {
 	return m.Health(ctx)
 }
 
-// WrapHandlerFunc returns a server.HandleWrapper, this works only for ClientPlugin
-func (r *AuthRegistry[T]) WrapHandlerFunc(ctx context.Context, req server.Request, rsp interface{}) error {
-	m, ok := any(r.plugin).(ClientPlugin)
-	if !ok {
-		return errors.InternalServerError("NO_SUCH_AUTH_PLUGIN", fmt.Sprintf("No plugin '%s' found", r.pluginName))
-	}
+// WrapHandler returns a server.HandleWrapper, this works only for ClientPlugin
+func (r *AuthRegistry[T]) WrapHandler() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return func(ctx context.Context, req server.Request, rsp interface{}) error {
+			m, ok := any(r.plugin).(ClientPlugin)
+			if !ok {
+				return errors.InternalServerError("NO_SUCH_AUTH_PLUGIN", fmt.Sprintf("No plugin '%s' found", r.pluginName))
+			}
 
-	return m.WrapHandlerFunc(ctx, req, rsp)
+			if err := m.WrapHandlerFunc(ctx, req, rsp); err != nil {
+				return err
+			}
+
+			return h(ctx, req, rsp)
+		}
+	}
 }

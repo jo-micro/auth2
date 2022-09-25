@@ -1931,12 +1931,18 @@ honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 jochum.dev/jo-micro/buncomponent v0.0.1 h1:UHLODCgkv0x29jt46SPZ8h20WCT2B8ZNG9wW1OQwdVQ=
 jochum.dev/jo-micro/buncomponent v0.0.1/go.mod h1:nQLcdOa3KMOZpm6SLmZK0ef18fX3V9L0BdABdedHiD4=
+jochum.dev/jo-micro/buncomponent v0.0.2 h1:+U9KmMYDUAArBVxw9bgyAfs26TuyhbnCJUdm2rymddA=
+jochum.dev/jo-micro/buncomponent v0.0.2/go.mod h1:hZpOmq78AKf0nViehhY4k9Y0tvAjQxoks9sQQeTDwu4=
 jochum.dev/jo-micro/components v0.0.11 h1:Rtm0J+MiMcyFVrweJ3r1eoxQY5qP59GzC1TPc7O9Ixs=
 jochum.dev/jo-micro/components v0.0.11/go.mod h1:XzhOsv4pAOoRdnrgvYlZXwPzzBd9/8h2CzehB/Yf92w=
 jochum.dev/jo-micro/components v0.1.0 h1:9QP79NK+lShksiswtqtxsW8kfd0aBtF87HuBZsu8yxE=
 jochum.dev/jo-micro/components v0.1.0/go.mod h1:Yvn0Qz1zctUQUI6WIjq7PbfLY87Qvywpw+KxnVZeCvA=
+jochum.dev/jo-micro/components v0.2.0 h1:aeV1nOUqpDzZafpKrBd86GdhCJAMYvC2pGeiXl751Ls=
+jochum.dev/jo-micro/components v0.2.0/go.mod h1:Yvn0Qz1zctUQUI6WIjq7PbfLY87Qvywpw+KxnVZeCvA=
 jochum.dev/jo-micro/logruscomponent v0.0.2 h1:IPyQXOdC0t6Howf4ndykRzVYovrxP5OHM3ZbalRqjYk=
 jochum.dev/jo-micro/logruscomponent v0.0.2/go.mod h1:WtSAK/M/zSKuawJhh+Ub+9pknbOKyUScK+qhEbCvFAU=
+jochum.dev/jo-micro/logruscomponent v0.0.3 h1:mjgzKKFDQ4uX1slSwajXq7IhrMBuHpkPhcozKWZwPGw=
+jochum.dev/jo-micro/logruscomponent v0.0.3/go.mod h1:SPdHhgI+L1xUouhtfuXS28bQn7ojF1YGsgEvhdh4deU=
 jochum.dev/jo-micro/router v0.3.6 h1:MgT8k7/Hrxpk+nfit3wg+X7oduo4DsM/uG6XT7Ca2ys=
 jochum.dev/jo-micro/router v0.3.6/go.mod h1:5zHbSgMEUKmF8lodzyg4XXXRxFi8QtOM9Ci55dRXs2I=
 jochum.dev/jo-micro/router v0.3.7 h1:4AE6PEp9gRMgGUAFkvJWDuT2Tk0cf/kbg12xBPC94OE=
@@ -1945,6 +1951,8 @@ jochum.dev/jo-micro/router v0.3.8 h1:sBSuQ/VpFxMatRvow9gAlYLeE5la7Y0WB+Eh2MqP73Q
 jochum.dev/jo-micro/router v0.3.8/go.mod h1:C5YjdFEIZtObsgFymCyTWOI+rLrUZS1LL9K5oYX8DtE=
 jochum.dev/jo-micro/router v0.4.0 h1:2IA/SzrhXGMv4I3Z0i7//U2bfgOE1cwv+r/Ey4FUSgw=
 jochum.dev/jo-micro/router v0.4.0/go.mod h1:yPfhNJQ3D1TJ4+IEluT5W5D0ax8mFRZnJ3mcWnyaGvw=
+jochum.dev/jo-micro/router v0.4.1 h1:MZC7La+w7isg7JjhgHsjq3htR28p+t0gOZzNyDNFK0k=
+jochum.dev/jo-micro/router v0.4.1/go.mod h1:2Izy7ib2LgTpg//YwzlsW7YcaJ5aXoxuLm1Pg3E0Z4c=
 k8s.io/api v0.20.1/go.mod h1:KqwcCVogGxQY3nBlRpwt+wpAMF/KjaCc7RpywacvqUo=
 k8s.io/api v0.20.4/go.mod h1:++lNL1AJMkDymriNniQsWRkMDzRaX2Y/POTUi8yvqYQ=
 k8s.io/api v0.20.6/go.mod h1:X9e8Qag6JV/bL5G6bU8sdVRltWKmdHsFUGS3eVndqE8=
