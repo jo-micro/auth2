@@ -1922,8 +1922,8 @@ jochum.dev/jo-micro/components v0.3.2 h1:Z6Od76Uh2C2+bKhfZvaDLbry8vWGe4Ie/rDfrOb
 jochum.dev/jo-micro/components v0.3.2/go.mod h1:MXpsIY5Gut4/wDNquiCN+e4zYtATVwn+7uiNKj4nlKk=
 jochum.dev/jo-micro/logruscomponent v0.0.4 h1:KkJhLIM0mm2tlk+z+gZdpb5vCeuBs6bhG3bncGhCqoQ=
 jochum.dev/jo-micro/logruscomponent v0.0.4/go.mod h1:NVy+eN3Xm2SlzdsQGuC/9/+MwU+8BwxFZuaTprmLguU=
-jochum.dev/jo-micro/router v0.4.8 h1:LLrozHtNAAtFRcvhlxNo+xnHfIZI3pR19ptDA1fWUpM=
-jochum.dev/jo-micro/router v0.4.8/go.mod h1:kldfbIJLutHygwQE3odDXpkfjEDjoLw4oYTM8h5eEwU=
+jochum.dev/jo-micro/router v0.4.10 h1:iNnD13iMBX1deBPdmm/1ym/6iA1sTywg4e79PhmTL6w=
+jochum.dev/jo-micro/router v0.4.10/go.mod h1:zJFOoZm4S0pTkhQcdT+ohve3zmfal2p6o2N+2kLb/7Y=
 k8s.io/api v0.20.1/go.mod h1:KqwcCVogGxQY3nBlRpwt+wpAMF/KjaCc7RpywacvqUo=
 k8s.io/api v0.20.4/go.mod h1:++lNL1AJMkDymriNniQsWRkMDzRaX2Y/POTUi8yvqYQ=
 k8s.io/api v0.20.6/go.mod h1:X9e8Qag6JV/bL5G6bU8sdVRltWKmdHsFUGS3eVndqE8=
