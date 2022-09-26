@@ -1,4 +1,6 @@
-[![Build Status](https://drone.fk.jochum.dev/api/badges/jo-micro/auth2/status.svg)](https://drone.fk.jochum.dev/jo-micro/auth2) [![Go Reference](https://pkg.go.dev/badge/jochum.dev/jo-micro/auth2.svg)](https://pkg.go.dev/jochum.dev/jo-micro/auth2)
+[![Build Status](https://drone.fk.jochum.dev/api/badges/jo-micro/auth2/status.svg)](https://drone.fk.jochum.dev/jo-micro/auth2)
+[![Software License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg?style=flat-square)](LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/jochum.dev/jo-micro/auth2.svg)](https://pkg.go.dev/jochum.dev/jo-micro/auth2)
 
 # auth2
 
