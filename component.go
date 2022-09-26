@@ -70,7 +70,7 @@ func (r *AuthRegistry[T]) Register(plugin T) {
 }
 
 func (r *AuthRegistry[T]) Priority() int {
-	return 100
+	return 50
 }
 
 func (r *AuthRegistry[T]) Name() string {

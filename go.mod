@@ -19,7 +19,7 @@ require (
 	jochum.dev/jo-micro/buncomponent v0.0.6
 	jochum.dev/jo-micro/components v0.3.0
 	jochum.dev/jo-micro/logruscomponent v0.0.4
-	jochum.dev/jo-micro/router v0.4.7
+	jochum.dev/jo-micro/router v0.4.8
 )
 
 require (
@@ -29,6 +29,7 @@ require (
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/cloudflare/circl v1.2.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
