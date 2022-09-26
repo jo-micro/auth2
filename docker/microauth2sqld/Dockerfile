@@ -24,7 +24,6 @@ LABEL maintainer="René Jochum <rene@jochum.dev>"
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /usr/local/bin/microauth2sqld /usr/local/bin/microauth2sqld
-RUN chmod +x /usr/local/bin/microauth2sqld
 
 COPY ./cmd/microauth2sqld/migrations /migrations
 

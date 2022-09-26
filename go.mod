@@ -17,7 +17,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
 	google.golang.org/protobuf v1.28.1
 	jochum.dev/jo-micro/buncomponent v0.0.6
-	jochum.dev/jo-micro/components v0.3.0
+	jochum.dev/jo-micro/components v0.3.2
 	jochum.dev/jo-micro/logruscomponent v0.0.4
 	jochum.dev/jo-micro/router v0.4.8
 )

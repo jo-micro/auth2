@@ -54,16 +54,13 @@ func (v *EndpointRolesVerifier) Verify(ctx context.Context, u *auth2.User, req s
 		}
 
 		if v.options.DefaultDeny {
-			v.logrus().WithField("endpoint", req.Endpoint()).WithField("user_roles", u.Roles).WithField("roles_allow", ep.RolesAllow).Debug("DefaultDeny: No matching role")
 			return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No matching role", "Unauthorized"), true
 		}
 	}
 
 	if !v.options.DefaultDeny {
-		v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Trace("DefaultAllow: No rule")
 		return nil, true
 	}
 
-	v.logrus().WithField("endpoint", req.Endpoint()).WithField("endpoints", v.endpointnames).Debug("DefaultDeny: no rule")
-	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule", "Unauthorized"), false
+	return errors.Unauthorized("auth2/plugins/verifier/endpointroles/EndpointRolesVerifier.Verify|No rule", "Unauthorized"), true
 }

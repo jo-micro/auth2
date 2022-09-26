@@ -25,6 +25,11 @@ func ClientAuthMustReg(cReg *components.Registry) *AuthRegistry[ClientPlugin] {
 	return cReg.Must(ClientAuthName).(*AuthRegistry[ClientPlugin])
 }
 
+func RegHasClientAuth(cReg *components.Registry) error {
+	_, err := cReg.Get(ClientAuthName)
+	return err
+}
+
 func RouterAuthComponent() *AuthRegistry[RouterPlugin] {
 	c := &AuthRegistry[RouterPlugin]{initialized: false, kind: "router", name: RouterAuthName, plugins: make(map[string]RouterPlugin)}
 	c.Register(newNoopRouterPlugin())
